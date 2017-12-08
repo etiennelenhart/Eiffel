@@ -1,0 +1,9 @@
+ext {
+    versionCodeArgument = { ->
+        return project.hasProperty('versionCode') ? versionCode.toInteger() : 2100000000
+    }
+
+    versionNameArgument = { ->
+        return project.hasProperty('versionName') ? versionName : "INTERNAL"
+    }
+}
