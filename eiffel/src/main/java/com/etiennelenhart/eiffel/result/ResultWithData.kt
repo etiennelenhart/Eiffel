@@ -4,9 +4,10 @@ import com.etiennelenhart.eiffel.ErrorType
 import com.etiennelenhart.eiffel.Status
 
 /**
- * The result of a pending or finished command that returns some data.
+ * Result of a pending or finished command that returns some data.
  *
- * @property[status] The command's current status.
+ * @param[T] Type of the returned data.
+ * @property[status] Command's current status.
  * @property[data] Data the command returned.
  */
 sealed class ResultWithData<out T>(val status: Status, val data: T) {

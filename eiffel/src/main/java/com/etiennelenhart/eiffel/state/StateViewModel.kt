@@ -9,19 +9,28 @@ import android.arch.lifecycle.ViewModel
  *
  * To ensure an immutable state, always set a new state using the
  * [updateState] function and calling copy(...).
- * @property[state] The observable view state.
+ *
+ * @param[T] Type of view state to expose.
+ * @property[state] Observable view state.
+ * @property[stateInitialized] The current value of the view state.
+ * @property[currentState] Current value of the view state.
  */
 abstract class StateViewModel<T : ViewState> : ViewModel() {
 
     abstract val state: LiveData<T>
 
+    protected val stateInitialized
+        get() = state.value != null
+    protected val currentState
+        get() = state.value!!
+
     /**
-     * Sets the initial view state.
+     * Sets the initial view state if not already initialized.
      *
      * @param[viewState] Initial view state.
      */
     protected fun initState(viewState: T) {
-        (state as MutableLiveData).value = viewState
+        if (!stateInitialized) (state as MutableLiveData).value = viewState
     }
 
     /**
@@ -37,6 +46,6 @@ abstract class StateViewModel<T : ViewState> : ViewModel() {
      * @throws[KotlinNullPointerException] when the state's initial value has not been set.
      */
     protected inline fun updateState(update: (currentState: T) -> T) {
-        (state as MutableLiveData).value = update(state.value!!)
+        (state as MutableLiveData).value = update(currentState)
     }
 }

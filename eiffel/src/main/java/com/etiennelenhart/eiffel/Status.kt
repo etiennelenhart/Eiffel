@@ -4,6 +4,6 @@ import com.etiennelenhart.eiffel.livedata.Resource
 import com.etiennelenhart.eiffel.result.Result
 
 /**
- * The current status of a command's [Result] or LiveData [Resource].
+ * Current status of a command's [Result] or a LiveData [Resource].
  */
 enum class Status { SUCCESS, PENDING, ERROR }
