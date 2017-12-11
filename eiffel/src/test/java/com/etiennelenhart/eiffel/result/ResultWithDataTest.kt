@@ -10,9 +10,9 @@ class ResultWithDataTest {
 
     @Test
     fun `GIVEN ResultWithData Success with 'data' WHEN 'status' queried THEN 'success' is returned`() {
-        val resource = ResultWithData.Success("")
+        val result = ResultWithData.Success("")
 
-        val actual = resource.status
+        val actual = result.status
 
         assertEquals(Status.SUCCESS, actual)
     }
@@ -20,18 +20,18 @@ class ResultWithDataTest {
     @Test
     fun `GIVEN ResultWithData Success with 'data' WHEN 'data' queried THEN 'data' is returned`() {
         val data = "data"
-        val resource = ResultWithData.Success(data)
+        val result = ResultWithData.Success(data)
 
-        val actual = resource.data
+        val actual = result.data
 
         assertEquals(data, actual)
     }
 
     @Test
     fun `GIVEN ResultWithData Pending with 'data' WHEN 'status' queried THEN 'pending' is returned`() {
-        val resource = ResultWithData.Pending("")
+        val result = ResultWithData.Pending("")
 
-        val actual = resource.status
+        val actual = result.status
 
         assertEquals(Status.PENDING, actual)
     }
@@ -39,18 +39,18 @@ class ResultWithDataTest {
     @Test
     fun `GIVEN ResultWithData Pending with 'data' WHEN 'data' queried THEN 'data' is returned`() {
         val data = "data"
-        val resource = ResultWithData.Pending(data)
+        val result = ResultWithData.Pending(data)
 
-        val actual = resource.data
+        val actual = result.data
 
         assertEquals(data, actual)
     }
 
     @Test
     fun `GIVEN ResultWithData Error with 'default' WHEN 'status' queried THEN 'error' is returned`() {
-        val resource = ResultWithData.Error("")
+        val result = ResultWithData.Error("")
 
-        val actual = resource.status
+        val actual = result.status
 
         assertEquals(Status.ERROR, actual)
     }
@@ -58,18 +58,18 @@ class ResultWithDataTest {
     @Test
     fun `GIVEN ResultWithData Error with 'default' WHEN 'data' queried THEN 'default' is returned`() {
         val default = "default"
-        val resource = ResultWithData.Error(default)
+        val result = ResultWithData.Error(default)
 
-        val actual = resource.data
+        val actual = result.data
 
         assertEquals(default, actual)
     }
 
     @Test
     fun `GIVEN ResultWithData Error with 'default' WHEN 'type' queried THEN 'unspecified' is returned`() {
-        val resource = ResultWithData.Error("")
+        val result = ResultWithData.Error("")
 
-        val actual = resource.type
+        val actual = result.type
 
         assertEquals(ErrorType.Unspecified, actual)
     }
@@ -77,9 +77,9 @@ class ResultWithDataTest {
     @Test
     fun `GIVEN ResultWithData Error with 'default' and 'type' WHEN 'type' queried THEN 'type' is returned`() {
         val type = object : ErrorType {}
-        val resource = ResultWithData.Error("", type)
+        val result = ResultWithData.Error("", type)
 
-        val actual = resource.type
+        val actual = result.type
 
         assertEquals(type, actual)
     }

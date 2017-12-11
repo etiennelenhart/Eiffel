@@ -10,36 +10,36 @@ class ResultTest {
 
     @Test
     fun `GIVEN Result Success WHEN 'status' queried THEN 'success' is returned`() {
-        val resource = Result.Success
+        val result = Result.Success
 
-        val actual = resource.status
+        val actual = result.status
 
         assertEquals(Status.SUCCESS, actual)
     }
 
     @Test
     fun `GIVEN Result Pending WHEN 'status' queried THEN 'pending' is returned`() {
-        val resource = Result.Pending
+        val result = Result.Pending
 
-        val actual = resource.status
+        val actual = result.status
 
         assertEquals(Status.PENDING, actual)
     }
 
     @Test
     fun `GIVEN Result Error WHEN 'status' queried THEN 'error' is returned`() {
-        val resource = Result.Error()
+        val result = Result.Error()
 
-        val actual = resource.status
+        val actual = result.status
 
         assertEquals(Status.ERROR, actual)
     }
 
     @Test
     fun `GIVEN Result Error WHEN 'type' queried THEN 'unspecified' is returned`() {
-        val resource = Result.Error()
+        val result = Result.Error()
 
-        val actual = resource.type
+        val actual = result.type
 
         assertEquals(ErrorType.Unspecified, actual)
     }
@@ -47,9 +47,9 @@ class ResultTest {
     @Test
     fun `GIVEN Result Error with 'type' WHEN 'type' queried THEN 'type' is returned`() {
         val type = object : ErrorType {}
-        val resource = Result.Error(type)
+        val result = Result.Error(type)
 
-        val actual = resource.type
+        val actual = result.type
 
         assertEquals(type, actual)
     }
