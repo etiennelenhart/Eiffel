@@ -3,7 +3,7 @@ package com.etiennelenhart.eiffel.state
 import android.arch.lifecycle.MutableLiveData
 
 /**
- * Convenience property to access the current view state's value.
+ * Convenience property to access the view state's current value.
  *
  * @throws[KotlinNullPointerException] when the state's value has not been set.
  */
