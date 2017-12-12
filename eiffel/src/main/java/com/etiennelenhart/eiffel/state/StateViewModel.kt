@@ -14,6 +14,7 @@ import android.arch.lifecycle.ViewModel
  * @property[state] Observable view state.
  * @property[stateInitialized] The current value of the view state.
  * @property[currentState] Current value of the view state.
+ * Throws [KotlinNullPointerException] when the state's initial value has not been set.
  */
 abstract class StateViewModel<T : ViewState> : ViewModel() {
 
