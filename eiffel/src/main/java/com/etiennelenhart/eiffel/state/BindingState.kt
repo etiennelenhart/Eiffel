@@ -1,11 +1,13 @@
 package com.etiennelenhart.eiffel.state
 
 /**
- * A state that adapts a [ViewState] to a bindable state for data binding.
+ * State that adapts a [ViewState] to a bindable state for data binding.
  *
  * Since [ViewState]s should expose view agnostic properties, any adaptions
  * needed to properly display the current state can be made inside this state's
  * [refresh] method.
+ *
+ * @param[T] Type of view state to adapt.
  */
 interface BindingState<in T : ViewState> {
 
@@ -20,6 +22,8 @@ interface BindingState<in T : ViewState> {
      *     }
      * }
      * ```
+     *
+     * @param[state] View state to adapt.
      */
     fun refresh(state: T)
 }

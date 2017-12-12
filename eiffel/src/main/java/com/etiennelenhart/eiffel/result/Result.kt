@@ -4,9 +4,9 @@ import com.etiennelenhart.eiffel.ErrorType
 import com.etiennelenhart.eiffel.Status
 
 /**
- * The result of a pending or finished command.
+ * Result of a pending or finished command.
  *
- * @property[status] The command's current status.
+ * @property[status] Command's current status.
  */
 sealed class Result(val status: Status) {
     /**
