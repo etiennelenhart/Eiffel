@@ -17,7 +17,7 @@ build.gradle *(Module)*
 ```
 dependencies {
     ...
-	implementation "android.arch.lifecycle:extensions:$architecture_version"
+    implementation "android.arch.lifecycle:extensions:$architecture_version"
     implementation 'com.github.etiennelenhart:Eiffel:1.0.0'
 }
 ```
