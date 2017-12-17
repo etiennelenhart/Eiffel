@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty
  * Property delegate to notify a property change to a data binding.
  *
  * The delegating property should be annotated with `@get:Bindable` to generate a field in BR.
- * Example usage:
+ * May be used in a [BaseObservable] like this:
  * ```
  * @get:Bindable
  * var sampleValue by NotifyBinding("", BR.sampleValue)

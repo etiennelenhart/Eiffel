@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
 /**
  * Property delegate to lazily provide a [ViewDataBinding] from [DataBindingUtil.setContentView].
  *
- * May be used in an Activity like this:
+ * May be used in an [Activity] like this:
  * ```
  * val binding by ContentViewBinding<ActivitySampleBinding>(R.layout.activity_sample)
  * ```
