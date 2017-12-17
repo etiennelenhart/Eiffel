@@ -29,7 +29,7 @@ class ProvidedViewModel<out T : ViewModel>(private val viewModelClass: Class<T>)
 }
 
 /**
- * Convenience inline function to use [ProvidedViewModel] delegate with type parameter instead of Java class.
+ * Convenience extension function to use [ProvidedViewModel] delegate with type parameter instead of Java class.
  *
  * May be used in a [FragmentActivity] like this:
  * ```
@@ -38,4 +38,4 @@ class ProvidedViewModel<out T : ViewModel>(private val viewModelClass: Class<T>)
  *
  * @param[T] Type of the provided view model.
  */
-inline fun <reified T : ViewModel> providedViewModel() = ProvidedViewModel(T::class.java)
+inline fun <reified T : ViewModel> FragmentActivity.providedViewModel() = ProvidedViewModel(T::class.java)
