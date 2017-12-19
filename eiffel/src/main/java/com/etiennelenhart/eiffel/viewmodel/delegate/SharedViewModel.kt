@@ -39,4 +39,4 @@ class SharedViewModel<out T : ViewModel>(private val viewModelClass: Class<T>) :
  *
  * @param[T] Type of the provided view model.
  */
-inline fun <reified T : ViewModel> sharedViewModel() = SharedViewModel(T::class.java)
+inline fun <reified T : ViewModel> Fragment.sharedViewModel() = SharedViewModel(T::class.java)

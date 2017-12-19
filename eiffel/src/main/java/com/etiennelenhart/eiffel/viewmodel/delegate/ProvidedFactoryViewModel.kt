@@ -18,15 +18,15 @@ import kotlin.reflect.KProperty
  *
  * @param[T] Type of the provided view model.
  * @param[viewModelClass] Java class of the provided view model.
- * @param[factory] The factory to instantiate the view model.
+ * @param[factory] Block to lazily get the factory to instantiate the view model.
  */
 class ProvidedFactoryViewModel<out T : ViewModel>(private val viewModelClass: Class<T>,
-                                                  private val factory: ViewModelProvider.Factory) : ReadOnlyProperty<FragmentActivity, T> {
+                                                  private val factory: () -> ViewModelProvider.Factory) : ReadOnlyProperty<FragmentActivity, T> {
 
     private var value: T? = null
 
     override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
-        if (value == null) value = ViewModelProviders.of(thisRef, factory).get(viewModelClass)
+        if (value == null) value = ViewModelProviders.of(thisRef, factory()).get(viewModelClass)
         return value!!
     }
 }
@@ -40,6 +40,8 @@ class ProvidedFactoryViewModel<out T : ViewModel>(private val viewModelClass: Cl
  * ```
  *
  * @param[T] Type of the provided view model.
- * @param[factory] The factory to instantiate the view model.
+ * @param[factory] Block to lazily get the factory to instantiate the view model.
  */
-inline fun <reified T : ViewModel> FragmentActivity.providedFactoryViewModel(factory: ViewModelProvider.Factory) = ProvidedFactoryViewModel(T::class.java, factory)
+inline fun <reified T : ViewModel> FragmentActivity.providedFactoryViewModel(noinline factory: () -> ViewModelProvider.Factory): ProvidedFactoryViewModel<T> {
+    return ProvidedFactoryViewModel(T::class.java, factory)
+}
