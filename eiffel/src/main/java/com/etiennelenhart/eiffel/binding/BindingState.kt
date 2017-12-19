@@ -1,4 +1,6 @@
-package com.etiennelenhart.eiffel.state
+package com.etiennelenhart.eiffel.binding
+
+import com.etiennelenhart.eiffel.state.ViewState
 
 /**
  * State that adapts a [ViewState] to a bindable state for data binding.
@@ -13,7 +15,7 @@ interface BindingState<in T : ViewState> {
 
     /**
      * Perform any adaptions needed to properly display the current state here.
-     * For example:
+     * For example, when using observable fields:
      *
      * ```
      * class SampleBindingState(val loading: ObservableBoolean = ObservableBoolean(false)) : BindingState<SampleViewState> {

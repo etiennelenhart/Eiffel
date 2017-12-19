@@ -1,14 +1,15 @@
-package com.etiennelenhart.eiffel.state
+package com.etiennelenhart.eiffel.viewmodel
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import com.etiennelenhart.eiffel.state.ViewState
 
 /**
  * A [ViewModel] exposing a single observable view state.
  *
  * To ensure an immutable state, always set a new state using the
- * [updateState] function and calling copy(...).
+ * [updateState] function and calling copy(...) on the provided current state.
  *
  * @param[T] Type of view state to expose.
  * @property[state] Observable view state.
