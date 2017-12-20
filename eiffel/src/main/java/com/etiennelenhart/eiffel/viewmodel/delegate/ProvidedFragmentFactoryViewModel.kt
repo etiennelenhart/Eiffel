@@ -42,6 +42,6 @@ class ProvidedFragmentFactoryViewModel<out T : ViewModel>(private val viewModelC
  * @param[T] Type of the provided view model.
  * @param[factory] Block to lazily get the factory to instantiate the view model.
  */
-inline fun <reified T : ViewModel> Fragment.providedFactoryViewModel(noinline factory: () -> ViewModelProvider.Factory): ProvidedFragmentFactoryViewModel<T> {
+inline fun <reified T : ViewModel> Fragment.providedViewModel(noinline factory: () -> ViewModelProvider.Factory): ProvidedFragmentFactoryViewModel<T> {
     return ProvidedFragmentFactoryViewModel(T::class.java, factory)
 }
