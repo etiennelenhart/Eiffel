@@ -36,12 +36,12 @@ class ProvidedFactoryViewModel<out T : ViewModel>(private val viewModelClass: Cl
  *
  * May be used in a [FragmentActivity] like this:
  * ```
- * val viewModel by providedFactoryViewModel<SampleViewModel>(sampleFactory)
+ * val viewModel by providedViewModel<SampleViewModel>(sampleFactory)
  * ```
  *
  * @param[T] Type of the provided view model.
  * @param[factory] Block to lazily get the factory to instantiate the view model.
  */
-inline fun <reified T : ViewModel> FragmentActivity.providedFactoryViewModel(noinline factory: () -> ViewModelProvider.Factory): ProvidedFactoryViewModel<T> {
+inline fun <reified T : ViewModel> FragmentActivity.providedViewModel(noinline factory: () -> ViewModelProvider.Factory): ProvidedFactoryViewModel<T> {
     return ProvidedFactoryViewModel(T::class.java, factory)
 }
