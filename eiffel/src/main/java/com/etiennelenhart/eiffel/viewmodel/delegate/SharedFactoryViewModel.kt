@@ -26,7 +26,7 @@ class SharedFactoryViewModel<out T : ViewModel>(private val viewModelClass: Clas
     private var value: T? = null
 
     override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
-        if (value == null) value = ViewModelProviders.of(thisRef.activity!!).get(viewModelClass)
+        if (value == null) value = ViewModelProviders.of(thisRef.activity!!, factory()).get(viewModelClass)
         return value!!
     }
 }
