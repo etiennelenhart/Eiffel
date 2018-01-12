@@ -1,7 +1,7 @@
 package com.etiennelenhart.eiffel
 
 /**
- * Type of error that occurred while executing a command or notifying a LiveData value.
+ * Type of error that occurred while executing a command or before notifying a LiveData value.
  */
 interface ErrorType {
 

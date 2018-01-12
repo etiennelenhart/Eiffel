@@ -5,7 +5,7 @@ import com.etiennelenhart.eiffel.state.ViewState
 /**
  * State that adapts a [ViewState] to a bindable state for data binding.
  *
- * Since [ViewState]s should expose view agnostic properties, any adaptions
+ * Since [ViewState]s should expose layout agnostic properties, any adaptions
  * needed to properly display the current state can be made inside this state's
  * [refresh] method.
  *
@@ -14,13 +14,15 @@ import com.etiennelenhart.eiffel.state.ViewState
 interface BindingState<in T : ViewState> {
 
     /**
-     * Perform any adaptions needed to properly display the current state here.
+     * Make any adaptions needed to properly display the current state here.
      * For example, when using observable fields:
      *
      * ```
-     * class SampleBindingState(val loading: ObservableBoolean = ObservableBoolean(false)) : BindingState<SampleViewState> {
-     *     fun refresh(state: SampleViewState) {
-     *         loading.set(state.status == Status.PENDING)
+     * class SampleBindingState : BindingState<SampleViewState> {
+     *     val progressBarVisible = ObservableBoolean(false)
+     *
+     *     override fun refresh(state: SampleViewState) {
+     *         progressBarVisible.set(state.status == Status.PENDING)
      *     }
      * }
      * ```

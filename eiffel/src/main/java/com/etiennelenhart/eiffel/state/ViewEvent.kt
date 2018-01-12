@@ -1,7 +1,7 @@
 package com.etiennelenhart.eiffel.state
 
 /**
- * Base class for view model actions that require an Activity.
+ * Base class for one-off view model actions that require an Activity.
  *
  * Can be used as a property in [ViewState]s to signal an action to the observer:
  *
@@ -13,7 +13,7 @@ package com.etiennelenhart.eiffel.state
  *
  * ```
  * sealed class SampleViewEvent : ViewEvent() {
- *     class ActivityAction : SampleViewEvent()
+ *     class ShowSample : SampleViewEvent()
  * }
  * ```
  *
@@ -23,7 +23,7 @@ package com.etiennelenhart.eiffel.state
  * viewModel.state.observe(this, Observer {
  *     if (!it.event.handled) {
  *         when (it.event) {
- *             is SampleViewEvent.ActivityAction -> {
+ *             is SampleViewEvent.ShowSample -> {
  *                 it.event.handled = true
  *                 ...
  *             }
@@ -33,11 +33,11 @@ package com.etiennelenhart.eiffel.state
  * ```
  *
  * @param[handled] 'true' when the event is already handled. Defaults to false.
- * @property[handled] 'false' when the event has yet to be handled. Set to 'true' when event is handled.
+ * @property[handled] 'false' when the event has yet to be handled. Set to 'true' when event has been handled.
  */
 abstract class ViewEvent(var handled: Boolean = false) {
     /**
-     * Convenience [ViewEvent] to set as an initial event that requires no action.
+     * Convenience [ViewEvent] to set as an initial event that requires no handling.
      *
      * This event's 'handled' property is initialized to 'true'.
      */
