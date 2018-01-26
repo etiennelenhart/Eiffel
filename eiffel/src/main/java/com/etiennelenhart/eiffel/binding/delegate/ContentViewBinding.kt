@@ -27,3 +27,16 @@ class ContentViewBinding<out T : ViewDataBinding>(@LayoutRes private val layoutI
         return value!!
     }
 }
+
+/**
+ * Convenience extension function for the [ContentViewBinding] delegate.
+ *
+ * May be used in an [Activity] like this:
+ * ```
+ * val binding by contentViewBinding<ActivitySampleBinding>(R.layout.activity_sample)
+ * ```
+ *
+ * @param[T] Type of the provided binding.
+ * @param[layoutId] ID of the layout to bind and set as content view.
+ */
+fun <T : ViewDataBinding> Activity.contentViewBinding(@LayoutRes layoutId: Int) = ContentViewBinding<T>(layoutId)

@@ -27,3 +27,19 @@ class NotifyBinding<T : Any>(private var value: T, private val fieldId: Int) : R
         thisRef.notifyPropertyChanged(fieldId)
     }
 }
+
+/**
+ * Convenience extension function for the [NotifyBinding] delegate.
+ *
+ * The delegating property should be annotated with `@get:Bindable` to generate a field in BR.
+ * May be used in a [BaseObservable] like this:
+ * ```
+ * @get:Bindable
+ * var sampleValue by notifyBinding("", BR.sampleValue)
+ * ```
+ *
+ * @param[T] Type of the notifying property.
+ * @param[value] Initial value.
+ * @param[fieldId] The id of the generated BR field.
+ */
+fun <T : Any> BaseObservable.notifyBinding(value: T, fieldId: Int) = NotifyBinding(value, fieldId)

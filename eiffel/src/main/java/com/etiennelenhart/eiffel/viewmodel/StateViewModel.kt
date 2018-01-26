@@ -36,7 +36,7 @@ abstract class StateViewModel<T : ViewState> : ViewModel() {
     }
 
     /**
-     * Updates the current state by applying the 'update' lambda.
+     * Updates the current state by applying the supplied lambda expression.
      *
      * May be used like this:
      *
@@ -44,10 +44,10 @@ abstract class StateViewModel<T : ViewState> : ViewModel() {
      * updateState { it.copy(sample = true) }
      * ```
      *
-     * @param[update] Lambda to update the current view state.
+     * @param[newState] Lambda expression that should return the new updated state.
      * @throws[KotlinNullPointerException] when the state's initial value has not been set.
      */
-    protected inline fun updateState(update: (currentState: T) -> T) {
-        (state as MutableLiveData).value = update(currentState)
+    protected inline fun updateState(newState: (currentState: T) -> T) {
+        (state as MutableLiveData).value = newState(currentState)
     }
 }

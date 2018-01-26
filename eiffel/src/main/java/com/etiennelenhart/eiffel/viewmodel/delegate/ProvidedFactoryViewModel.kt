@@ -18,10 +18,12 @@ import kotlin.reflect.KProperty
  *
  * @param[T] Type of the provided view model.
  * @param[viewModelClass] Java class of the provided view model.
- * @param[factory] Block to lazily get the factory to instantiate the view model.
+ * @param[factory] Lambda expression to lazily get the factory to instantiate the view model.
  */
-class ProvidedFactoryViewModel<out T : ViewModel>(private val viewModelClass: Class<T>,
-                                                  private val factory: () -> ViewModelProvider.Factory) : ReadOnlyProperty<FragmentActivity, T> {
+class ProvidedFactoryViewModel<out T : ViewModel>(
+    private val viewModelClass: Class<T>,
+    private val factory: () -> ViewModelProvider.Factory
+) : ReadOnlyProperty<FragmentActivity, T> {
 
     private var value: T? = null
 
@@ -36,12 +38,11 @@ class ProvidedFactoryViewModel<out T : ViewModel>(private val viewModelClass: Cl
  *
  * May be used in a [FragmentActivity] like this:
  * ```
- * val viewModel by providedViewModel<SampleViewModel>(sampleFactory)
+ * val viewModel by providedViewModel<SampleViewModel> { sampleFactory }
  * ```
  *
  * @param[T] Type of the provided view model.
- * @param[factory] Block to lazily get the factory to instantiate the view model.
+ * @param[factory] Lambda expression to lazily get the factory to instantiate the view model.
  */
-inline fun <reified T : ViewModel> FragmentActivity.providedViewModel(noinline factory: () -> ViewModelProvider.Factory): ProvidedFactoryViewModel<T> {
-    return ProvidedFactoryViewModel(T::class.java, factory)
-}
+inline fun <reified T : ViewModel> FragmentActivity.providedViewModel(noinline factory: () -> ViewModelProvider.Factory) =
+    ProvidedFactoryViewModel(T::class.java, factory)
