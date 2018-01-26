@@ -88,20 +88,22 @@ When something changes and the `ViewState` needs to be refreshed, just call `upd
 ```kotlin
 updateState { it.copy(name = "Whiskers") }
 ```
-The `ViewModel`'s state `LiveData` will then notify active observers with the new view state.
+The ViewModel's state `LiveData` will then notify active observers with the new view state.
 
 #### Delegated Properties
-For easier access to `ViewModels` from an `Activity` Eiffel provides convenience [Delegated Properties](https://kotlinlang.org/docs/reference/delegated-properties.html). So instead of manually storing the `ViewModel` inside a lazy property and supplying a Java `Class`, use the `providedViewModel` delegate:
+For easier access to ViewModels from an `Activity` Eiffel provides convenience [Delegated Properties](https://kotlinlang.org/docs/reference/delegated-properties.html). So instead of manually storing the `ViewModel` inside a lazy property and supplying a Java `Class`, use the `providedViewModel` delegate:
 ```kotlin
 class CatActivity : AppCompatActivity() {
-    private val conventionalViewModel by lazy { ViewModelProviders.of(this).get(CatViewModel::class.java) }
+    private val conventionalViewModel by lazy {
+        ViewModelProviders.of(this).get(CatViewModel::class.java)
+    }
     private val catViewModel by providedViewModel<CatViewModel>()
     ...
 }
 ```
 
 ### Observing
-Observing the `ViewModel`'s `ViewState` from an `Activity` works just like observing any other `LiveData`. Simply call `observe` on the provided `state` property in `onCreate` and perform any view updates in the `Observer` lambda expression:
+Observing the ViewModel's `ViewState` from an `Activity` works just like observing any other `LiveData`. Simply call `observe` on the provided `state` property in `onCreate` and perform any view updates in the `Observer` lambda expression:
 ```kotlin
 class CatActivity : AppCompatActivity() {
     private val catViewModel by providedViewModel<CatViewModel>()
@@ -120,7 +122,7 @@ Sometimes the `ViewState` may contain information that should only be shown once
 
 One solution would be to call a `ViewModel` function from the `Activity` that resets the triggering information in the `ViewState` to a default value and ignoring this value in the view's `Observer` logic. While this will work for smaller projects, Eiffel provides a handy `ViewEvent`.
 
-It should be used as a `ViewState` property which may be set to the current event. For default values, it provides a `ViewEvent.None` object to indicate that there is no event to be handled. When creating `ViewEvents` consider using Kotlin's [Sealed Classes](https://kotlinlang.org/docs/reference/sealed-classes.html) to constrain possible events and allow easy processing in [When Expressions](https://kotlinlang.org/docs/reference/control-flow.html#when-expression):
+It should be used as a `ViewState` property which may be set to the current event. For default values, it provides a `ViewEvent.None` object to indicate that there is no event to be handled. When creating ViewEvents consider using Kotlin's [Sealed Classes](https://kotlinlang.org/docs/reference/sealed-classes.html) to constrain possible events and allow easy processing in [When Expressions](https://kotlinlang.org/docs/reference/control-flow.html#when-expression):
 ```kotlin
 sealed class CatViewEvent : ViewEvent() {
     class Meow : CatViewEvent()
@@ -135,7 +137,7 @@ Now, when the `ViewModel` needs to trigger a specific event, just set the state'
 ```kotlin
 updateState { it.copy(event = CatViewEvent.Meow()) }
 ```
-The only violation of an immutable state that Eiffel permits is to mark a `ViewEvent` as "handled". Since these are one-off events, the possibility of inconsistent UI elements is low and the benefit of keeping the `ViewModel`'s public functions lean prevails.
+The only violation of an immutable state that Eiffel permits is to mark a `ViewEvent` as "handled". Since these are one-off events, the possibility of inconsistent UI elements is low and the benefit of keeping the ViewModel's public functions lean prevails.
 
 To process and handle an event from an `Activity` you can use a when expression in the `Observer` lambda expression:
 ```kotlin
@@ -157,12 +159,12 @@ viewModel.state.observe(this, Observer {
 ```
 
 ### Dependency injection
-Dependency injection (DI) is a pattern to decouple objects from their dependencies. It basically means solely working with interfaces and passing every type a specific class depends on in its constructor or functions. This effectively bans the use of "new" or static functions to instantiate these dependencies from inside the class. If you have never heard of Dependency injection definitely consider reading up on it. DI should be a fundamental part of a robust and modern app architecture.
+Dependency injection (DI) is a pattern to decouple objects from their dependencies. It basically means solely working with interfaces and passing every type a specific class depends on in its constructor or functions. This effectively bans the use of "new" or static functions to instantiate these dependencies from inside the class and allows easy swapping with Mocks or Fake classes in Unit Tests. If you have never heard of Dependency injection definitely consider reading up on it. DI should be a fundamental part of a robust and modern app architecture.
 
 There are many ways to implement Dependency injection in your project. Two that Eiffel recommends are using Dagger 2 as a DI framework or Architecture Components' [`ViewModelProvider.Factory`](https://developer.android.com/reference/android/arch/lifecycle/ViewModelProvider.Factory.html). Since Dagger involves a relatively high learning curve only the provider factories will be shown here. If you're not familiar with Dagger but consider using it you may start at the official [Dagger User's Guide](https://google.github.io/dagger/users-guide).
 
 #### Provider factory
-At the moment of writing this readme the documentation on `ViewModel` provider factories is sparse. Using them is actually pretty straightforward though. You basically just need to create a subclass of the `ViewModelProvider.NewInstanceFactory` class. Instances of this class will be used by the framework when retrieving a `ViewModel` from a `ViewModelProvider`.
+At the moment of writing this readme the documentation on `ViewModelProvider` factories is sparse. Using them is actually pretty straightforward though. You basically just need to create a subclass of the `ViewModelProvider.NewInstanceFactory` class. Instances of this class will be used by the framework when retrieving a `ViewModel` from a `ViewModelProvider`.
 
 So start by creating a factory for a `ViewModel` that requires additional dependencies. Let's say the `CatViewModel` shown in the [ViewModel section](#viewmodel) now needs some cat food:
 ```kotlin
@@ -175,20 +177,22 @@ class CatFactory : ViewModelProvider.NewInstanceFactory() {
     }
 }
 ```
-Now when getting an instance of the `ViewModel` in an `Activity` you can supply the corresponding factory to the `ViewModelProvider`. Staying true to the Dependency injection pattern the easiest way to supply an `Activity` with a factory is to provide it as a property in a custom `Application` class. To prevent excessive memory use you can implement a [custom getter](https://kotlinlang.org/docs/reference/properties.html#getters-and-setters) that creates a factory instance on demand:
+Now when getting an instance of the `ViewModel` in an `Activity` you can supply the corresponding factory to the `ViewModelProvider`. Since Activities are instantiated by the system and therefore don't support direct injection, the easiest way to supply an `Activity` with a factory is to provide it as a property in a custom `Application` class the `Activity` has access to. To prevent excessive memory use you can implement a [custom getter](https://kotlinlang.org/docs/reference/properties.html#getters-and-setters) that creates a factory instance on demand:
 ```kotlin
 class FriendlyMittens : Application() {
     val catFactory: ViewModelProvider.NewInstanceFactory
         get() = CatFactory()
-        ...
+    ...
 }
 ```
-If you have to keep any dependencies in memory independent of a `ViewModel` you may leverage Kotlin's [Lazy properties](https://kotlinlang.org/docs/reference/delegated-properties.html#lazy) inside factories or the factory itself. Similarly, global dependencies required by multiple factories may of course be stored in a property of the custom `Application` and injected in the facrories' constructors.
+If you have to keep any dependencies in memory independent of a `ViewModel` lifespan you may leverage Kotlin's [Lazy properties](https://kotlinlang.org/docs/reference/delegated-properties.html#lazy) inside factories or for the factory itself. Similarly, global dependencies required by multiple factories may of course be stored in a property of the custom `Application` and injected in the facrories' constructors.
 
 Eiffel provides overloads for its [Delegated Properties](#delegated-properties) to make getting a `ViewModel` with a custom factory a bit more concise:
 ```kotlin
 class CatActivity : AppCompatActivity() {
-    private val catViewModel by providedViewModel<CatViewModel> { (application as FriendlyMittens).catFactory }
+    private val catViewModel by providedViewModel<CatViewModel> {
+        (application as FriendlyMittens).catFactory
+    }
     ...
 }
 ```
@@ -199,14 +203,18 @@ Analog to the `ViewModel` [Delegated Properties](#delegated-properties) for an `
 ```kotlin
 class KittenFragment : Fragment() {
     private val kittenViewModel by providedViewModel<KittenViewModel>()
-    private val boredKittenViewModel by providedViewModel<BoredKittenViewModel> { (application as FriendlyMittens).boredKittenFactory }
+    private val boredKittenViewModel by providedViewModel<BoredKittenViewModel> {
+        (application as FriendlyMittens).boredKittenFactory
+    }
     ...
 }
 ```
 A propably more common case though is to share an Activity's `ViewModel` across multiple Fragments (see the [ViewModel documentation](https://developer.android.com/topic/libraries/architecture/viewmodel.html#sharing) for more info). Eiffel contains a special Delegated Property to facilitate the use of these shared ViewModels even with custom factories:
 ```kotlin
 class KittenFragment : Fragment() {
-    private val catViewModel by sharedViewModel<CatViewModel> { (application as FriendlyMittens).catFactory }
+    private val catViewModel by sharedViewModel<CatViewModel> {
+        (application as FriendlyMittens).catFactory
+    }
     ...
 }
 ```
@@ -222,7 +230,7 @@ Let's say you're making a view for an angry cat that meows a lot. The `ViewState
 ```kotlin
 data class AngryCatViewState(val meowing: Boolean = false) : ViewState
 ```
-The `BindingState` can then be constructed as complex or simple as needed by the layout (Note: You may use `ObservableFields` or extend the state from `BaseObservable` to notify the binding about changes. See [Data Objects](https://developer.android.com/topic/libraries/data-binding/index.html#data_objects) for more info.):
+The `BindingState` can then be constructed as complex or simple as needed by the layout. You may extend the state from `BaseObservable` to notify the binding about changes or use ObservableFields (See the [Data Binding documentation](https://developer.android.com/topic/libraries/data-binding/index.html#data_objects) on Data Objects for more info):
 ```kotlin
 class AngryCatBindingState : BindingState<AngryCatViewState> {
     val soundResId = ObservableInt(0)
@@ -323,9 +331,13 @@ typealias PersistMeowCount = (count: Int) -> Result
 ```
 Then add the commands as dependencies in the respective `ViewModel`:
 ```kotlin
-class CatViewModel(private val food: CatFood, private val meows: MeowCount, private val persistMeows: PersistMeowCount) : StateViewModel<CatViewState>() { ... }
+class CatViewModel(
+    private val food: CatFood,
+    private val meows: MeowCount,
+    private val persistMeows: PersistMeowCount
+) : StateViewModel<CatViewState>() { ... }
 ```
-Now you'll need to supply implementations of the commands when creating an instance of the `ViewModel` in the corresponding `ViewModelProvider.Factory` (Refer to the [Dependency injection](#dependency-injection) section for more info.):
+Now you'll need to supply implementations of the commands when creating an instance of the `ViewModel` in the corresponding `ViewModelProvider.Factory` (Refer to the [Dependency injection](#dependency-injection) section for more info):
 ```kotlin
 class CatFactory : ViewModelProvider.NewInstanceFactory() {
     @Suppress("UNCHECKED_CAST")
@@ -334,11 +346,17 @@ class CatFactory : ViewModelProvider.NewInstanceFactory() {
             food = DryFood(),
             meows = {
                 val count = // get count from SharedPreferences
-                if (/* succeeded */) ResultWithData.Success(count) else ResultWithData.Error(-1, /* optional ErrorType */)
+                if (/* succeeded */)
+                    ResultWithData.Success(count)
+                else
+                    ResultWithData.Error(-1, /* optional ErrorType */)
             },
             persistMeows = { count: Int ->
                 // persist count in SharedPreferences
-                if (/* succeeded */) Result.Success else Result.Error(/* optional ErrorType */)
+                if (/* succeeded */)
+                    Result.Success
+                else
+                    Result.Error(/* optional ErrorType */)
             }
         ) as T
     }
@@ -346,7 +364,11 @@ class CatFactory : ViewModelProvider.NewInstanceFactory() {
 ```
 In the `ViewModel` the commands can then be used like any other lambda expression:
 ```kotlin
-class CatViewModel(private val food: CatFood, private val meows: MeowCount, private val persistMeows: PersistMeowCount) : StateViewModel<CatViewState>() {
+class CatViewModel(
+    private val food: CatFood,
+    private val meows: MeowCount,
+    private val persistMeows: PersistMeowCount
+) : StateViewModel<CatViewState>() {
     ...
 
     init {
@@ -405,7 +427,7 @@ class CatMilkLiveData : LiveData<Resource<MilkStatus>>() {
         ...
         value = Resource.Success(MilkStatus.Full)
         ...
-        value = Resource.Error(MilkStatus.Empty, MilkError.Empty)        
+        value = Resource.Error(MilkStatus.Empty, MilkError.Spilled)        
     }
 }
 ```
