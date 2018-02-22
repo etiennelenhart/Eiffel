@@ -9,8 +9,8 @@ import org.junit.Test
 class ResultTest {
 
     @Test
-    fun `GIVEN Result Success WHEN 'status' queried THEN 'success' is returned`() {
-        val result = Result.Success
+    fun `GIVEN Result Success with 'data' WHEN 'status' queried THEN 'success' is returned`() {
+        val result = Result.Success(0)
 
         val actual = result.status
 
@@ -18,12 +18,32 @@ class ResultTest {
     }
 
     @Test
-    fun `GIVEN Result Pending WHEN 'status' queried THEN 'pending' is returned`() {
-        val result = Result.Pending
+    fun `GIVEN Result Success with 'data' WHEN 'data' queried THEN 'data' is returned`() {
+        val data = "data"
+        val result = Result.Success(data)
+
+        val actual = result.data
+
+        assertEquals(data, actual)
+    }
+
+    @Test
+    fun `GIVEN Result Pending with 'data' WHEN 'status' queried THEN 'pending' is returned`() {
+        val result = Result.Pending(0)
 
         val actual = result.status
 
         assertEquals(Status.PENDING, actual)
+    }
+
+    @Test
+    fun `GIVEN Result Pending with 'data' WHEN 'data' queried THEN 'data' is returned`() {
+        val data = "data"
+        val result = Result.Pending(data)
+
+        val actual = result.data
+
+        assertEquals(data, actual)
     }
 
     @Test
