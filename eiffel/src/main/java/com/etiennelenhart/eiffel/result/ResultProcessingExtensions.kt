@@ -26,7 +26,7 @@ inline fun <T, T2> Result<T>.then(command: (data: T) -> Result<T2>) = when (this
 inline fun <T, T2> Result<T>.map(transform: (data: T) -> T2) = when (this) {
     is Result.Success -> Result.Success(transform(data))
     is Result.Pending -> Result.Pending(transform(data))
-    is Result.Error -> this
+    is Result.Error -> Result.Error(transform(data), type)
 }
 
 /**
@@ -36,6 +36,6 @@ inline fun <T, T2> Result<T>.map(transform: (data: T) -> T2) = when (this) {
  * @param[transform] Expression to transform the result's error type.
  */
 inline fun <T> Result<T>.mapError(transform: (type: ErrorType) -> ErrorType) = when (this) {
-    is Result.Error -> Result.Error(transform(type))
+    is Result.Error -> Result.Error(data, transform(type))
     else -> this
 }

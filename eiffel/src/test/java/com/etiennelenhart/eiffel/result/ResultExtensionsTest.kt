@@ -8,16 +8,16 @@ import kotlin.test.assertNotEquals
 class ResultExtensionsTest {
 
     @Test
-    fun `GIVEN Result Success with 'data' WHEN 'on' called THEN 'succeeded' is invoked`() {
-        val result = Result.Success("succeeded")
+    fun `GIVEN Result Success with 'data' WHEN 'on' called THEN 'success' is invoked`() {
+        val result = Result.Success("success")
 
         val actual = result.on(
-            succeeded = { it },
+            success = { it },
             isPending = { "pending" },
-            failed = { "failed" }
+            error = { _, _ -> "error" }
         )
 
-        assertEquals("succeeded", actual)
+        assertEquals("success", actual)
     }
 
     @Test
@@ -25,113 +25,113 @@ class ResultExtensionsTest {
         val result = Result.Pending("pending")
 
         val actual = result.on(
-            succeeded = { "succeeded" },
+            success = { "success" },
             isPending = { it },
-            failed = { "failed" }
+            error = { _, _ -> "error" }
         )
 
         assertEquals("pending", actual)
     }
 
     @Test
-    fun `GIVEN Result Error WHEN 'on' called THEN 'failed' is invoked`() {
-        val result = Result.Error()
+    fun `GIVEN Result Error WHEN 'on' called THEN 'error' is invoked`() {
+        val result = Result.Error("error")
 
         val actual = result.on(
-            succeeded = { "succeeded" },
+            success = { "success" },
             isPending = { "pending" },
-            failed = { "failed" }
+            error = { data, _ -> data }
         )
 
-        assertEquals("failed", actual)
+        assertEquals("error", actual)
     }
 
     @Test
-    fun `GIVEN Result Success with 'data' WHEN 'succeeded' called THEN 'block' is invoked`() {
+    fun `GIVEN Result Success with 'data' WHEN 'onSuccess' called THEN 'block' is invoked`() {
         val result = Result.Success("block")
 
         var actual = ""
-        result.succeeded { actual = it }
+        result.onSuccess { actual = it }
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Pending with 'data' WHEN 'succeeded' called THEN 'block' is not invoked`() {
+    fun `GIVEN Result Pending with 'data' WHEN 'onSuccess' called THEN 'block' is not invoked`() {
         val result = Result.Pending("block")
 
         var actual = ""
-        result.succeeded { actual = it }
+        result.onSuccess { actual = it }
 
         assertNotEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Error WHEN 'succeeded' called THEN 'block' is not invoked`() {
-        val result = Result.Error()
+    fun `GIVEN Result Error WHEN 'onSuccess' called THEN 'block' is not invoked`() {
+        val result = Result.Error("block")
 
         var actual = ""
-        result.succeeded { actual = "block" }
+        result.onSuccess { actual = it }
 
         assertNotEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Pending with 'data' WHEN 'isPending' called THEN 'block' is invoked`() {
+    fun `GIVEN Result Pending with 'data' WHEN 'onPending' called THEN 'block' is invoked`() {
         val result = Result.Pending("block")
 
         var actual = ""
-        result.isPending { actual = it }
+        result.onPending { actual = it }
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Success with 'data' WHEN 'isPending' called THEN 'block' is not invoked`() {
+    fun `GIVEN Result Success with 'data' WHEN 'onPending' called THEN 'block' is not invoked`() {
         val result = Result.Success("block")
 
         var actual = ""
-        result.isPending { actual = it }
+        result.onPending { actual = it }
 
         assertNotEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Error WHEN 'isPending' called THEN 'block' is not invoked`() {
-        val result = Result.Error()
+    fun `GIVEN Result Error WHEN 'onPending' called THEN 'block' is not invoked`() {
+        val result = Result.Error("block")
 
         var actual = ""
-        result.isPending { actual = "block" }
+        result.onPending { actual = it }
 
         assertNotEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Error WHEN 'failed' called THEN 'block' is invoked`() {
-        val result = Result.Error()
+    fun `GIVEN Result Error WHEN 'onError' called THEN 'block' is invoked`() {
+        val result = Result.Error("block")
 
         var actual = ""
-        result.failed { actual = "block" }
+        result.onError { data, _ -> actual = data }
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Success with 'data' WHEN 'failed' called THEN 'block' is not invoked`() {
-        val result = Result.Success(0)
+    fun `GIVEN Result Success with 'data' WHEN 'onError' called THEN 'block' is not invoked`() {
+        val result = Result.Success("block")
 
         var actual = ""
-        result.failed { actual = "block" }
+        result.onError { data, _ -> actual = data }
 
         assertNotEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Pending with 'data' WHEN 'failed' called THEN 'block' is not invoked`() {
-        val result = Result.Pending(0)
+    fun `GIVEN Result Pending with 'data' WHEN 'onError' called THEN 'block' is not invoked`() {
+        val result = Result.Pending("block")
 
         var actual = ""
-        result.failed { actual = "block" }
+        result.onError { data, _ -> actual = data }
 
         assertNotEquals("block", actual)
     }

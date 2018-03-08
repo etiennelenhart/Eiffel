@@ -12,26 +12,26 @@ import com.etiennelenhart.eiffel.Status
  */
 sealed class Result<out T>(val status: Status, val data: T) {
     /**
-     * Result variant signaling a successful command that returns data.
+     * Result variant signaling a successful command.
      *
      * @param[data] Data the command should return.
      */
     class Success<out T>(data: T) : Result<T>(Status.SUCCESS, data)
 
     /**
-     * Result variant signaling a pending command that returns data.
+     * Result variant signaling a pending command.
      *
      * @param[data] Data the command should return.
      */
     class Pending<out T>(data: T) : Result<T>(Status.PENDING, data)
 
     /**
-     * Result variant signaling a failed command that returns data.
+     * Result variant signaling a failed command.
      *
      * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      * @property[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      */
-    class Error(val type: ErrorType = ErrorType.Unspecified) : Result<Unit>(Status.ERROR, Unit)
+    class Error<out T>(data: T, val type: ErrorType = ErrorType.Unspecified) : Result<T>(Status.ERROR, data)
 }
 
 /**
@@ -40,14 +40,14 @@ sealed class Result<out T>(val status: Status, val data: T) {
  * @param[data] Data the command should return.
  * @return The [Result.Success] variant.
  */
-fun <T> success(data: T) = Result.Success(data)
+fun <T> succeeded(data: T) = Result.Success(data)
 
 /**
  * Convenience function to create a [Result.Success] without any data.
  *
  * @return The [Result.Success] variant.
  */
-fun success() = success(Unit)
+fun succeeded() = succeeded(Unit)
 
 /**
  * Convenience function to create a [Result.Pending] variant.
@@ -67,7 +67,16 @@ fun pending() = pending(Unit)
 /**
  * Convenience function to create a [Result.Error] variant.
  *
+ * @param[data] Data the command should return.
  * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
  * @return The [Result.Error] variant.
  */
-fun error(type: ErrorType = ErrorType.Unspecified) = Result.Error(type)
+fun <T> failed(data: T, type: ErrorType = ErrorType.Unspecified) = Result.Error(data, type)
+
+/**
+ * Convenience function to create a [Result.Error] without any data.
+ *
+ * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
+ * @return The [Result.Error] variant.
+ */
+fun failed(type: ErrorType = ErrorType.Unspecified) = failed(Unit, type)

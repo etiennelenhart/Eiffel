@@ -48,7 +48,7 @@ class ResultTest {
 
     @Test
     fun `GIVEN Result Error WHEN 'status' queried THEN 'error' is returned`() {
-        val result = Result.Error()
+        val result = Result.Error(0)
 
         val actual = result.status
 
@@ -57,7 +57,7 @@ class ResultTest {
 
     @Test
     fun `GIVEN Result Error WHEN 'type' queried THEN 'unspecified' is returned`() {
-        val result = Result.Error()
+        val result = Result.Error(0)
 
         val actual = result.type
 
@@ -67,7 +67,7 @@ class ResultTest {
     @Test
     fun `GIVEN Result Error with 'type' WHEN 'type' queried THEN 'type' is returned`() {
         val type = object : ErrorType {}
-        val result = Result.Error(type)
+        val result = Result.Error(0, type)
 
         val actual = result.type
 

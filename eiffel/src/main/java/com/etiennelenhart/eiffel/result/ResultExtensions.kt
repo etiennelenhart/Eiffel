@@ -7,15 +7,15 @@ import com.etiennelenhart.eiffel.ErrorType
  *
  * @param[T] Type of the result's data.
  * @param[R] The expressions' return type.
- * @param[succeeded] Expression to call for a successful command's result.
+ * @param[success] Expression to call for a successful command's result.
  * @param[isPending] Expression to call for a pending command's result.
- * @param[failed] Expression to call for a failed command's result.
+ * @param[error] Expression to call for a failed command's result.
  * @return The called expression's result.
  */
-inline fun <T, R> Result<T>.on(succeeded: (data: T) -> R, isPending: (data: T) -> R, failed: (type: ErrorType) -> R) = when (this) {
-    is Result.Success -> succeeded(data)
+inline fun <T, R> Result<T>.on(success: (data: T) -> R, isPending: (data: T) -> R, error: (data: T, type: ErrorType) -> R) = when (this) {
+    is Result.Success -> success(data)
     is Result.Pending -> isPending(data)
-    is Result.Error -> failed(type)
+    is Result.Error -> error(data, type)
 }
 
 /**
@@ -26,7 +26,7 @@ inline fun <T, R> Result<T>.on(succeeded: (data: T) -> R, isPending: (data: T) -
  * @param[block] The lambda expression to call.
  * @return The called expression's result.
  */
-inline fun <T, R> Result<T>.succeeded(block: (data: T) -> R) {
+inline fun <T, R> Result<T>.onSuccess(block: (data: T) -> R) {
     if (this is Result.Success) block(data)
 }
 
@@ -38,7 +38,7 @@ inline fun <T, R> Result<T>.succeeded(block: (data: T) -> R) {
  * @param[block] The lambda expression to call.
  * @return The called expression's result.
  */
-inline fun <T, R> Result<T>.isPending(block: (data: T) -> R) {
+inline fun <T, R> Result<T>.onPending(block: (data: T) -> R) {
     if (this is Result.Pending) block(data)
 }
 
@@ -50,6 +50,6 @@ inline fun <T, R> Result<T>.isPending(block: (data: T) -> R) {
  * @param[block] The lambda expression to call.
  * @return The called expression's result.
  */
-inline fun <T, R> Result<T>.failed(block: (type: ErrorType) -> R) {
-    if (this is Result.Error) block(type)
+inline fun <T, R> Result<T>.onError(block: (data: T, type: ErrorType) -> R) {
+    if (this is Result.Error) block(data, type)
 }

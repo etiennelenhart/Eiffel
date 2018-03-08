@@ -9,6 +9,8 @@ import kotlin.test.assertNotEquals
 @Suppress("IllegalIdentifier")
 class ResultProcessingExtensionsTest {
 
+    private object TestError : ErrorType
+
     @Test
     fun `GIVEN Result Success with 'data' WHEN 'then' called THEN 'command' is invoked`() {
         val result = Result.Success("command")
@@ -29,7 +31,7 @@ class ResultProcessingExtensionsTest {
 
     @Test
     fun `GIVEN Result Error WHEN 'then' called THEN 'command' is not invoked`() {
-        val result = Result.Error()
+        val result = Result.Error(0)
 
         val actual = result.then { Result.Success("command invoked") }.data
 
@@ -38,7 +40,7 @@ class ResultProcessingExtensionsTest {
 
     @Test
     fun `GIVEN Result Error WHEN 'then' called THEN error is forwarded`() {
-        val result = Result.Error()
+        val result = Result.Error(0)
 
         val actual = result.then { Result.Success(0) }
 
@@ -64,12 +66,21 @@ class ResultProcessingExtensionsTest {
     }
 
     @Test
-    fun `GIVEN Result Error WHEN 'map' called THEN error is forwarded`() {
-        val result = Result.Error()
+    fun `GIVEN Result Error WHEN 'map' called THEN 'transform' is applied to 'data'`() {
+        val result = Result.Error(0, TestError)
 
-        val actual = result.map {}
+        val actual = result.map { it.inc() }.data
 
-        assertEquals(result, actual)
+        assertEquals(1, actual)
+    }
+
+    @Test
+    fun `GIVEN Result Error WHEN 'map' called THEN 'type' is forwarded`() {
+        val result = Result.Error(0, TestError)
+
+        val actual = result.map { it.inc() }
+
+        assertEquals(TestError, (actual as Result.Error).type)
     }
 
     @Test
@@ -90,11 +101,9 @@ class ResultProcessingExtensionsTest {
         assertEquals(result, actual)
     }
 
-    private object TestError : ErrorType
-
     @Test
     fun `GIVEN Result Error WHEN called THEN 'transform' is applied to 'type'`() {
-        val result = Result.Error()
+        val result = Result.Error(0)
 
         val actual = result.mapError { TestError }
 
