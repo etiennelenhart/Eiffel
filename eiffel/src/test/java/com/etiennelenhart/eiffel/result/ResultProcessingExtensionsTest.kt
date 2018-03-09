@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
-@Suppress("IllegalIdentifier")
 class ResultProcessingExtensionsTest {
 
     private object TestError : ErrorType
