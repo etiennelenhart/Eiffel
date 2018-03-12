@@ -1,5 +1,6 @@
 package com.etiennelenhart.eiffel.livedata
 
+import android.arch.lifecycle.LiveData
 import com.etiennelenhart.eiffel.ErrorType
 import com.etiennelenhart.eiffel.Status
 
@@ -34,3 +35,28 @@ sealed class Resource<out T>(val status: Status, val value: T) {
      */
     class Error<out T>(value: T, val type: ErrorType = ErrorType.Unspecified) : Resource<T>(Status.ERROR, value)
 }
+
+/**
+ * Convenience function to create a [Resource.Success] variant.
+ *
+ * @param[value] LiveData's actual value.
+ * @return The [Resource.Success] variant.
+ */
+fun <T> LiveData<Resource<T>>.successValue(value: T) = Resource.Success(value)
+
+/**
+ * Convenience function to create a [Resource.Pending] variant.
+ *
+ * @param[value] LiveData's actual value.
+ * @return The [Resource.Pending] variant.
+ */
+fun <T> LiveData<Resource<T>>.pendingValue(value: T) = Resource.Pending(value)
+
+/**
+ * Convenience function to create a [Resource.Error] variant.
+ *
+ * @param[value] LiveData's actual value.
+ * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
+ * @return The [Resource.Error] variant.
+ */
+fun <T> LiveData<Resource<T>>.errorValue(value: T, type: ErrorType = ErrorType.Unspecified) = Resource.Error(value, type)

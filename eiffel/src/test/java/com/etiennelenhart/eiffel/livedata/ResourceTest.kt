@@ -5,7 +5,6 @@ import com.etiennelenhart.eiffel.Status
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-@Suppress("IllegalIdentifier")
 class ResourceTest {
 
     @Test
