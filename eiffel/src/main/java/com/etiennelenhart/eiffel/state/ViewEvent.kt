@@ -21,25 +21,33 @@ package com.etiennelenhart.eiffel.state
  *
  * ```
  * viewModel.state.observe(this, Observer {
- *     if (!it.event.handled) {
- *         when (it.event) {
- *             is SampleViewEvent.ShowSample -> {
- *                 it.event.handled = true
- *                 ...
- *             }
- *         }
+ *     when (it.event) {
+ *         is SampleViewEvent.ShowSample -> it.event.handle { ... }
  *     }
  * })
  * ```
- *
- * @param[handled] 'true' when the event is already handled. Defaults to false.
- * @property[handled] 'false' when the event has yet to be handled. Set to 'true' when event has been handled.
  */
-abstract class ViewEvent(var handled: Boolean = false) {
+abstract class ViewEvent {
+
+    protected var handled = false
+
+    /**
+     * Marks this event as "handled" and calls the provided lambda expression if it has not been handled already.
+     */
+    fun handle(block: () -> Unit) {
+        if (!handled) {
+            handled = true
+            block()
+        }
+    }
+
     /**
      * Convenience [ViewEvent] to set as an initial event that requires no handling.
-     *
-     * This event's 'handled' property is initialized to 'true'.
      */
-    object None : ViewEvent(true)
+    object None : ViewEvent() {
+
+        init {
+            handled = true
+        }
+    }
 }
