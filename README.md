@@ -35,14 +35,14 @@ Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](
   * [LiveData](#livedata)
 
 ## Installation
-build.gradle *(Project)*
+build.gradle *(project)*
 ```gradle
 repositories {
     maven { url 'https://jitpack.io' }
 }
 ```
 
-build.gradle *(Module)*
+build.gradle *(module)*
 ```gradle
 dependencies {
     implementation "android.arch.lifecycle:extensions:$architecture_version"
@@ -52,7 +52,7 @@ dependencies {
 
 ## Migration
 Migration guides for breaking changes:
- * [2.0.0 → 3.0.0](https://github.com/etiennelenhart/Eiffel/blob/master/MIGRATION2-3.md)
+ * [2.0.0 → 3.0.0](./MIGRATION2-3.md)
 
 ## Architecture
 Eiffel's architecture recommendation is based on Google's [Guide to App Architecture](https://developer.android.com/topic/libraries/architecture/guide.html) and therefore encourages an MVVM style. An exemplified app architecture that Eiffel facilitates is shown in the following diagram.
@@ -149,17 +149,9 @@ To process and handle an event from an `Activity` you can use a when expression 
 ```kotlin
 viewModel.state.observe(this, Observer {
     ...
-    if (!it.event.handled) {
-        when (it.event) {
-            is CatViewEvent.Meow -> {
-               it.event.handled = true
-               // show Meow! dialog
-            }
-            is CatViewEvent.Sleep -> {
-               it.event.handled = true
-               // finish Activity
-            }
-        }
+    when (it.event) {
+       is CatViewEvent.Meow -> it.event.handle { // show Meow! dialog }
+       is CatViewEvent.Sleep -> it.event.handle { // finish Activity }
     }
 })
 ```
@@ -429,8 +421,8 @@ getMilk().then { fillBowl(it) }.fold({ ... }, { ... })
 
 Sometimes it may be required to convert a result to another one with different data or error type. For example in order to simplify the result of a command that gets the current level of a cat's milkbowl to one that signals an empty bowl. This can be achieved by using the `map()` function which applies the given lambda expression to a command's result data:
 ```kotlin
-getMilkLevel("Whiskers").map { it == 0 }.onSuccess {
-    val name = if (it) "Hungry Whiskers" else "Happy Whiskers"
+getMilkLevel("Whiskers").map { it == 0 }.isSuccess { empty ->
+    val name = if (empty) "Hungry Whiskers" else "Happy Whiskers"
     updateState { it.copy(name = name) }
 }
 ```
