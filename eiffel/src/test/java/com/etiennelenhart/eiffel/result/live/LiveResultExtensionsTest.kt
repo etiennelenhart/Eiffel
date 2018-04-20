@@ -7,28 +7,28 @@ import kotlin.test.assertNotEquals
 class LiveResultExtensionsTest {
 
     @Test
-    fun `GIVEN LiveResult Pending with 'data' WHEN 'on' called THEN 'onPending' is invoked`() {
+    fun `GIVEN LiveResult Pending with 'data' WHEN 'fold' called THEN 'onPending' is invoked`() {
         val result = LiveResult.Pending("block")
 
-        val actual = result.on({ it }, { "" }, { "" })
+        val actual = result.fold({ it }, { "" }, { "" })
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN LiveResult Success with 'data' WHEN 'on' called THEN 'onSuccess' is invoked`() {
+    fun `GIVEN LiveResult Success with 'data' WHEN 'fold' called THEN 'onSuccess' is invoked`() {
         val result = LiveResult.Success("block")
 
-        val actual = result.on({ "" }, { it }, { "" })
+        val actual = result.fold({ "" }, { it }, { "" })
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN LiveResult Failure WHEN 'on' called THEN 'onFailure' is invoked`() {
+    fun `GIVEN LiveResult Failure WHEN 'fold' called THEN 'onFailure' is invoked`() {
         val result = LiveResult.Failure()
 
-        val actual = result.on({ "" }, { "" }, { "block" })
+        val actual = result.fold({ "" }, { "" }, { "block" })
 
         assertEquals("block", actual)
     }

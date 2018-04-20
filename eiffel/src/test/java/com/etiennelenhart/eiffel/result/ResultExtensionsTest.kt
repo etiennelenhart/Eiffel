@@ -7,19 +7,19 @@ import kotlin.test.assertNotEquals
 class ResultExtensionsTest {
 
     @Test
-    fun `GIVEN Result Success with 'data' WHEN 'on' called THEN 'onSuccess' is invoked`() {
+    fun `GIVEN Result Success with 'data' WHEN 'fold' called THEN 'onSuccess' is invoked`() {
         val result = Result.Success("block")
 
-        val actual = result.on({ it }, { "" })
+        val actual = result.fold({ it }, { "" })
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN Result Error WHEN 'on' called THEN 'onError' is invoked`() {
+    fun `GIVEN Result Error WHEN 'fold' called THEN 'onError' is invoked`() {
         val result = Result.Error()
 
-        val actual = result.on({ it }, { "block" })
+        val actual = result.fold({ it }, { "block" })
 
         assertEquals("block", actual)
     }

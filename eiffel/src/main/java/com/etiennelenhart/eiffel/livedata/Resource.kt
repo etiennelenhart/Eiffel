@@ -31,7 +31,7 @@ sealed class Resource<out T>(val value: T) {
      * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      * @property[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      */
-    class Error<out T>(value: T, val type: ErrorType = ErrorType.Unspecified) : Resource<T>(value)
+    class Failure<out T>(value: T, val type: ErrorType = ErrorType.Unspecified) : Resource<T>(value)
 }
 
 /**
@@ -51,10 +51,10 @@ fun <T> LiveData<Resource<T>>.successValue(value: T) = Resource.Success(value)
 fun <T> LiveData<Resource<T>>.pendingValue(value: T) = Resource.Pending(value)
 
 /**
- * Convenience function to create a [Resource.Error] variant.
+ * Convenience function to create a [Resource.Failure] variant.
  *
  * @param[value] LiveData's actual value.
  * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
- * @return The [Resource.Error] variant.
+ * @return The [Resource.Failure] variant.
  */
-fun <T> LiveData<Resource<T>>.errorValue(value: T, type: ErrorType = ErrorType.Unspecified) = Resource.Error(value, type)
+fun <T> LiveData<Resource<T>>.failureValue(value: T, type: ErrorType = ErrorType.Unspecified) = Resource.Failure(value, type)

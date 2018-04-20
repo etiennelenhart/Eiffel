@@ -7,16 +7,6 @@ import org.junit.Test
 class ResourceTest {
 
     @Test
-    fun `GIVEN Resource Success with 'value' WHEN 'value' queried THEN 'value' is returned`() {
-        val value = "value"
-        val resource = Resource.Success(value)
-
-        val actual = resource.value
-
-        assertEquals(value, actual)
-    }
-
-    @Test
     fun `GIVEN Resource Pending with 'value' WHEN 'value' queried THEN 'value' is returned`() {
         val value = "value"
         val resource = Resource.Pending(value)
@@ -27,9 +17,19 @@ class ResourceTest {
     }
 
     @Test
+    fun `GIVEN Resource Success with 'value' WHEN 'value' queried THEN 'value' is returned`() {
+        val value = "value"
+        val resource = Resource.Success(value)
+
+        val actual = resource.value
+
+        assertEquals(value, actual)
+    }
+
+    @Test
     fun `GIVEN Resource Error with 'value' WHEN 'value' queried THEN 'value' is returned`() {
         val value = "value"
-        val resource = Resource.Error(value)
+        val resource = Resource.Failure(value)
 
         val actual = resource.value
 
@@ -38,7 +38,7 @@ class ResourceTest {
 
     @Test
     fun `GIVEN Resource Error with 'value' WHEN 'type' queried THEN 'unspecified' is returned`() {
-        val resource = Resource.Error("")
+        val resource = Resource.Failure("")
 
         val actual = resource.type
 
@@ -48,7 +48,7 @@ class ResourceTest {
     @Test
     fun `GIVEN Resource Error with 'value' and 'type' WHEN 'type' queried THEN 'type' is returned`() {
         val type = object : ErrorType {}
-        val resource = Resource.Error("", type)
+        val resource = Resource.Failure("", type)
 
         val actual = resource.type
 
