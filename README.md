@@ -395,6 +395,12 @@ sealed class SharedPreferencesError : ErrorType {
 ...
 ```
 
+#### Exceptions
+Sometimes it is not possible to provide all expected error types ahead of time, especially when calling platform or third party methods. Eiffel provides a handy `attempt()` function that wraps a given expression with a try catch block and automatically converts the outcome to a `Result` either containing the expression's result or an AttemptError with the thrown exception:
+```kotlin
+attempt { throw RuntimeException() }.isError { it /* is AttemptError with RuntimeException */ }
+```
+
 #### Result types
 Since Eiffel doesn't constrain commands you are completely free in specifying result types. You can even leverage the power of Kotlin's [Coroutines](https://kotlinlang.org/docs/reference/coroutines.html) to create easy to use asynchronous commands. Check below for some examples of possible combinations:
 ```kotlin
