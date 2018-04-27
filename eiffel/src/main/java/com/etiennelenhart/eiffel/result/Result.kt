@@ -1,29 +1,25 @@
 package com.etiennelenhart.eiffel.result
 
 import com.etiennelenhart.eiffel.ErrorType
-import com.etiennelenhart.eiffel.Status
+import com.etiennelenhart.eiffel.result.live.LiveResult
+import com.etiennelenhart.eiffel.result.live.failure
+import com.etiennelenhart.eiffel.result.live.success
 
 /**
- * Result of a pending or finished command.
+ * Result of a finished command.
  *
  * @param[T] Type of the returned data.
- * @property[status] Command's current status.
- * @property[data] Data the command returned.
  */
-sealed class Result<out T>(val status: Status, val data: T) {
+sealed class Result<out T> {
+
     /**
      * Result variant signaling a successful command.
      *
+     * @param[T] Type of result data.
      * @param[data] Data the command should return.
+     * @property[data] Data the command returned.
      */
-    class Success<out T>(data: T) : Result<T>(Status.SUCCESS, data)
-
-    /**
-     * Result variant signaling a pending command.
-     *
-     * @param[data] Data the command should return.
-     */
-    class Pending<out T>(data: T) : Result<T>(Status.PENDING, data)
+    class Success<out T>(val data: T) : Result<T>()
 
     /**
      * Result variant signaling a failed command.
@@ -31,52 +27,40 @@ sealed class Result<out T>(val status: Status, val data: T) {
      * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      * @property[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      */
-    class Error<out T>(data: T, val type: ErrorType = ErrorType.Unspecified) : Result<T>(Status.ERROR, data)
+    class Error(val type: ErrorType = ErrorType.Unspecified) : Result<Nothing>()
 }
 
 /**
  * Convenience function to create a [Result.Success] variant.
  *
+ * @param[T] Type of result data.
  * @param[data] Data the command should return.
  * @return The [Result.Success] variant.
  */
 fun <T> succeeded(data: T) = Result.Success(data)
 
 /**
- * Convenience function to create a [Result.Success] without any data.
+ * Convenience function to create a [Result.Success] without data.
  *
  * @return The [Result.Success] variant.
  */
 fun succeeded() = succeeded(Unit)
 
 /**
- * Convenience function to create a [Result.Pending] variant.
- *
- * @param[data] Data the command should return.
- * @return The [Result.Pending] variant.
- */
-fun <T> pending(data: T) = Result.Pending(data)
-
-/**
- * Convenience function to create a [Result.Pending] without any data.
- *
- * @return The [Result.Pending] variant.
- */
-fun pending() = pending(Unit)
-
-/**
  * Convenience function to create a [Result.Error] variant.
  *
- * @param[data] Data the command should return.
  * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
  * @return The [Result.Error] variant.
  */
-fun <T> failed(data: T, type: ErrorType = ErrorType.Unspecified) = Result.Error(data, type)
+fun failed(type: ErrorType = ErrorType.Unspecified) = Result.Error(type)
 
 /**
- * Convenience function to create a [Result.Error] without any data.
+ * Converts this [Result] to an instance of [LiveResult].
  *
- * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
- * @return The [Result.Error] variant.
+ * @param[T] Type of result data.
+ * @return The [LiveResult] converted from this [Result].
  */
-fun failed(type: ErrorType = ErrorType.Unspecified) = failed(Unit, type)
+fun <T> Result<T>.toLive() = when (this) {
+    is Result.Success -> success(data)
+    is Result.Error -> failure(type)
+}
