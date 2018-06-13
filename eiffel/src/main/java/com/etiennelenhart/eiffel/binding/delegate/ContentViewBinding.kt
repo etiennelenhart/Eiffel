@@ -3,7 +3,7 @@ package com.etiennelenhart.eiffel.binding.delegate
 import android.app.Activity
 import android.databinding.DataBindingUtil
 import android.databinding.ViewDataBinding
-import android.support.annotation.LayoutRes
+import androidx.annotation.LayoutRes
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
