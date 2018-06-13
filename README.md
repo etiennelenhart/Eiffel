@@ -4,11 +4,11 @@
 
 ![Logo](./logo_full.svg)
 
-A light-weight *Kotlin* Android architecture library for handling immutable view states with [Architecture Components](https://developer.android.com/topic/libraries/architecture/index.html).
+A light-weight *Kotlin* Android architecture library for handling immutable view states with [Jetpack Architecture Components](https://developer.android.com/jetpack/arch/).
 
 Eiffel provides an extended `ViewModel` class with immutable state handling in conjuction with Delegated Properties for easy referencing in `Activities` and `Fragments`.
 
-For users of Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/index.html) framework this library adds a specialized `BindingState` to adapt an immutable state for binding and some convenience Delegated Properties for common Data Binding operations.
+For users of Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/) framework this library adds a specialized `BindingState` to adapt an immutable state for binding and some convenience Delegated Properties for common Data Binding operations.
 
 As a bonus Eiffel offers wrapper classes with convenience functions to represent the status of business logic commands and [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) values.
 
@@ -45,8 +45,8 @@ repositories {
 build.gradle *(module)*
 ```gradle
 dependencies {
-    implementation "android.arch.lifecycle:extensions:$architecture_version"
-    implementation 'com.github.etiennelenhart:eiffel:3.0.0'
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation 'com.github.etiennelenhart:eiffel:3.1.0'
 }
 ```
 
@@ -55,7 +55,7 @@ Migration guides for breaking changes:
  * [2.0.0 → 3.0.0](./MIGRATION2-3.md)
 
 ## Architecture
-Eiffel's architecture recommendation is based on Google's [Guide to App Architecture](https://developer.android.com/topic/libraries/architecture/guide.html) and therefore encourages an MVVM style. An exemplified app architecture that Eiffel facilitates is shown in the following diagram.
+Eiffel's architecture recommendation is based on Google's [Guide to App Architecture](https://developer.android.com/jetpack/docs/guide) and therefore encourages an MVVM style. An exemplified app architecture that Eiffel facilitates is shown in the following diagram.
 
 ![Architecture Diagram](./architecture_diagram.svg)
 
@@ -219,7 +219,7 @@ class KittenFragment : Fragment() {
 > Internally the delegate supplies the `ViewModelProvider` with the Fragment's associated `Activity` by using its `activity` property. This keeps the `ViewModel` scoped to this `Activity` and all Fragments receive the same instance.
 
 ## Data Binding
-If you want to use Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/index.html) framework in your project, Eiffel's got you covered, too. There would be a couple of issues when using an immutable `ViewState` directly in data bindings. Setting individual properties as variables for a binding would essentially break the notification of any changes once the state has been updated with a new instance. While using the whole state as a variable may work, it will definitely break when you're trying to use two-way binding.
+If you want to use Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/) framework in your project, Eiffel's got you covered, too. There would be a couple of issues when using an immutable `ViewState` directly in data bindings. Setting individual properties as variables for a binding would essentially break the notification of any changes once the state has been updated with a new instance. While using the whole state as a variable may work, it will definitely break when you're trying to use two-way binding.
 
 ### BindingState
 To solve these issues Eiffel contains a simple `BindingState` interface that you can base your binding specific states on. It emposes a single `refresh` function that receives the corresponding `ViewState`. An added benefit when using a dedicated `BindingState` is that you can keep your ViewStates pretty generic and agnostic to view details and resources.
@@ -444,7 +444,7 @@ getMilkLevel("Whiskers").mapError {
 Similarly, to map a pending value from `LiveResult` you may use `mapPending()`.
 
 ### LiveData
-Continously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can also benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/topic/libraries/architecture/guide.html#addendum)). Eiffel contains a simple `Resource` Sealed Class that essentially works just like `LiveResult` does for commands. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
+Continously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can also benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class that essentially works just like `LiveResult` does for commands. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
 ```kotlin
 class CatMilkLiveData : LiveData<Resource<MilkStatus>>() {
     ...
