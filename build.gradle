@@ -1,6 +1,4 @@
 buildscript {
-    apply from: 'version.gradle'
-
     ext.kotlin_version = '1.2.50'
     repositories {
         google()
