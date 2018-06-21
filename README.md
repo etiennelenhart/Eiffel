@@ -46,13 +46,13 @@ build.gradle *(module)*
 ```gradle
 dependencies {
     implementation "android.arch.lifecycle:extensions:$architecture_version"
-    implementation 'com.github.etiennelenhart:eiffel:3.0.0'
+    implementation 'com.github.etiennelenhart:eiffel:3.0.1'
 }
 ```
 
 ## Migration
 Migration guides for breaking changes:
- * [2.0.0 → 3.0.0](./MIGRATION2-3.md)
+ * [2.0.0 → 3.0.x](./MIGRATION2-3.md)
 
 ## Architecture
 Eiffel's architecture recommendation is based on Google's [Guide to App Architecture](https://developer.android.com/topic/libraries/architecture/guide.html) and therefore encourages an MVVM style. An exemplified app architecture that Eiffel facilitates is shown in the following diagram.
@@ -219,16 +219,16 @@ class KittenFragment : Fragment() {
 > Internally the delegate supplies the `ViewModelProvider` with the Fragment's associated `Activity` by using its `activity` property. This keeps the `ViewModel` scoped to this `Activity` and all Fragments receive the same instance.
 
 ## Data Binding
-If you want to use Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/index.html) framework in your project, Eiffel's got you covered, too. There would be a couple of issues when using an immutable `ViewState` directly in data bindings. Setting individual properties as variables for a binding would essentially break the notification of any changes once the state has been updated with a new instance. While using the whole state as a variable may work, it will definitely break when you're trying to use two-way binding.
+If you want to use Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/index.html) framework in your project, Eiffel's got you covered, too. There would be a couple of issues when using an immutable `ViewState` directly in data bindings. Setting individual properties as variables for a binding would essentially break the notification of any changes once the state has been updated with a new instance. While using the whole state as a variable may work, it will trigger an update to every bound view, even when there is no change in the respective property.
 
 ### BindingState
-To solve these issues Eiffel contains a simple `BindingState` interface that you can base your binding specific states on. It emposes a single `refresh` function that receives the corresponding `ViewState`. An added benefit when using a dedicated `BindingState` is that you can keep your ViewStates pretty generic and agnostic to view details and resources.
+To solve these issues Eiffel contains a simple `BindingState` interface that you can base your binding specific states on. It emposes a single `refresh` function that receives the corresponding `ViewState`. This also allows you to keep your view states pretty generic and agnostic to layout details and resources.
 
 Let's say you're making a view for an angry cat that meows a lot. The `ViewState` can be designed without any knowledge of the view's actual layout. It just needs to provide an indicator whether the cat is currently meowing:
 ```kotlin
 data class AngryCatViewState(val meowing: Boolean = false) : ViewState
 ```
-The `BindingState` can then be constructed as complex or simple as needed by the layout. You may extend the state from `BaseObservable` to notify the binding about changes or use ObservableFields (See the [Data Binding documentation](https://developer.android.com/topic/libraries/data-binding/index.html#data_objects) on Data Objects for more info):
+The `BindingState` can then be constructed as complex or simple as needed by the layout. You may extend the state from `BaseObservable` to notify the binding about changes or use ObservableFields (See the [Data Binding documentation](https://developer.android.com/topic/libraries/data-binding/observability) on Observable Data Objects for more info):
 ```kotlin
 class AngryCatBindingState : BindingState<AngryCatViewState> {
     val soundResId = ObservableInt(0)
@@ -260,6 +260,10 @@ To use the `BindingState` in the layout XML just set it as a variable and bind t
 
         <data>
             <variable
+                name="viewmodel"
+                type="com.fluffycat.friendlymittens.angrycat.viewmodel.AngryCatViewModel"/>
+
+            <variable
                 name="state"
                 type="com.fluffycat.friendlymittens.angrycat.state.AngryCatBindingState"/>
         </data>
@@ -280,14 +284,16 @@ To use the `BindingState` in the layout XML just set it as a variable and bind t
 ```
 
 ### Delegated Properties for Binding
-To make working with Data Binding just a little bit more convenient, Eiffel provides some Delegated Properties. The `notifyBinding` delegate allows you to easily notify a changed value to a binding when extending [`BaseObervable`](https://developer.android.com/topic/libraries/data-binding/index.html#observable_objects):
+To make working with Data Binding a bit more convenient, Eiffel provides some Delegated Properties. The `notifyBinding` delegate allows you to easily notify a changed value to a binding when extending [`BaseObervable`](https://developer.android.com/topic/libraries/data-binding/index.html#observable_objects):
 ```kotlin
 class AngryCatBindingState : BaseObservable(), BindingState<AngryCatViewState> {
     @get:Bindable
     var soundResId by notifyBinding(0, BR.soundResId)
+        private set
 
     @get:Bindable
     var catResId by notifyBinding(R.drawable.cat, BR.catResId)
+        private set
 
     override fun refresh(state: AngryCatViewState) {
         soundResId = if (state.meowing) R.string.meow else 0

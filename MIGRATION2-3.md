@@ -1,4 +1,4 @@
-## Migrating from 2.0.0 to 3.0.0
+## Migrating from 2.0.0 to 3.0.x
 
 ### ViewEvent
 Handling of a `ViewEvent` has been greatly simplified. You now can just call `handle()` on an event and pass it a lambda expression that will only be called if the event has not been handled already. Internally the event is marked as "handled" before the expression is invoked.
@@ -45,7 +45,7 @@ Commands with intermediate status updates are still supported with the new `Live
 ### Resource
 The "failed" variant of `Resource` has gone through some naming changes to stay consistent with the new `LiveResult` type:
 
-2.0.0 | 3.0.0
+2.0.0 | 3.0.x
 ------|------
 `Resource.Error` | `Resource.Failure`
 `errorValue()` | `failureValue()`

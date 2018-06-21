@@ -8,6 +8,9 @@ import kotlin.reflect.KProperty
  * Property delegate to notify a property change to a data binding.
  *
  * The delegating property should be annotated with `@get:Bindable` to generate a field in BR.
+ *
+ * **Note: Checks for structural inequality before triggering the change.**
+ *
  * May be used in a [BaseObservable] like this:
  * ```
  * @get:Bindable
@@ -23,8 +26,10 @@ class NotifyBinding<T : Any>(private var value: T, private val fieldId: Int) : R
     override fun getValue(thisRef: BaseObservable, property: KProperty<*>) = value
 
     override fun setValue(thisRef: BaseObservable, property: KProperty<*>, value: T) {
-        this.value = value
-        thisRef.notifyPropertyChanged(fieldId)
+        if (this.value != value) {
+            this.value = value
+            thisRef.notifyPropertyChanged(fieldId)
+        }
     }
 }
 
@@ -32,6 +37,9 @@ class NotifyBinding<T : Any>(private var value: T, private val fieldId: Int) : R
  * Convenience extension function for the [NotifyBinding] delegate.
  *
  * The delegating property should be annotated with `@get:Bindable` to generate a field in BR.
+ *
+ * **Note: Checks for structural inequality before triggering the change.**
+ *
  * May be used in a [BaseObservable] like this:
  * ```
  * @get:Bindable
