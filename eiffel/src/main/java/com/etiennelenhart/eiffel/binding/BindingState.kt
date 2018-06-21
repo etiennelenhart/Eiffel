@@ -15,14 +15,16 @@ interface BindingState<in T : ViewState> {
 
     /**
      * Make any adaptions needed to properly display the current state here.
-     * For example, when using observable fields:
+     * For example, when using BaseObservable:
      *
      * ```
-     * class SampleBindingState : BindingState<SampleViewState> {
-     *     val progressBarVisible = ObservableBoolean(false)
+     * class SampleBindingState : BaseObservable(), BindingState<SampleViewState> {
+     *     @get:Bindable
+     *     var sampleResId by notifyBinding(R.string.none, BR.sampleResId)
+     *         private set
      *
      *     override fun refresh(state: SampleViewState) {
-     *         progressBarVisible.set(state.status == Status.PENDING)
+     *         sampleResId = if (state.sampling) R.string.sample else R.string.none
      *     }
      * }
      * ```
