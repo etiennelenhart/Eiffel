@@ -284,7 +284,7 @@ To use the `BindingState` in the layout XML just set it as a variable and bind t
 ```
 
 ### Delegated Properties for Binding
-To make working with Data Binding a bit more convenient, Eiffel provides some Delegated Properties. The `notifyBinding` delegate allows you to easily notify a changed value to a binding when extending [`BaseObervable`](https://developer.android.com/topic/libraries/data-binding/index.html#observable_objects):
+To make working with Data Binding a bit more convenient, Eiffel provides some Delegated Properties. The `notifyBinding` delegate allows you to easily notify a changed value to a binding when extending [`BaseObervable`](https://developer.android.com/topic/libraries/data-binding/observability#observable_objects):
 ```kotlin
 class AngryCatBindingState : BaseObservable(), BindingState<AngryCatViewState> {
     @get:Bindable
