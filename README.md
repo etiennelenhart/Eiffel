@@ -1,5 +1,5 @@
 # Eiffel
-[![Build Status](https://www.bitrise.io/app/d982833489004cbc/status.svg?token=66rf2t84v8SFdippsAWM8g&branch=master)](https://www.bitrise.io/app/d982833489004cbc)
+[![Build Status](https://app.bitrise.io/app/d982833489004cbc/status.svg?token=66rf2t84v8SFdippsAWM8g&branch=master)](https://www.bitrise.io/app/d982833489004cbc)
 [![JitPack](https://jitpack.io/v/etiennelenhart/eiffel.svg)](https://jitpack.io/#etiennelenhart/eiffel)
 
 ![Logo](./logo_full.svg)
@@ -46,7 +46,7 @@ build.gradle *(module)*
 ```gradle
 dependencies {
     implementation "android.arch.lifecycle:extensions:$architecture_version"
-    implementation 'com.github.etiennelenhart:eiffel:3.0.1'
+    implementation 'com.github.etiennelenhart:eiffel:3.1.0'
 }
 ```
 

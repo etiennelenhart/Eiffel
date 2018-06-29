@@ -3,7 +3,7 @@ package com.etiennelenhart.eiffel.result.live
 import com.etiennelenhart.eiffel.ErrorType
 
 /**
- * Invokes the respective lambda expression depending on the result's type and returns its result.
+ * Invokes the respective lambda expression depending on the result's type and returns the expression's result.
  *
  * @param[P] Type of the result's intermediate data.
  * @param[S] Type of the result's success data.
@@ -20,28 +20,31 @@ inline fun <P, S, R> LiveResult<P, S>.fold(onPending: (data: P) -> R, onSuccess:
 }
 
 /**
- * Invokes the given lambda expression when the result is pending.
+ * Invokes the given lambda expression when the result is pending and forwards this result.
  *
  * @param[P] Type of the result's intermediate data.
  * @param[S] Type of the result's success data.
  * @param[block] The lambda expression to call.
+ * @return this result.
  */
-inline fun <P, S> LiveResult<P, S>.isPending(block: (data: P) -> Unit) = fold(block, {}, {})
+inline fun <P, S> LiveResult<P, S>.isPending(block: (data: P) -> Unit) = also { it.fold(block, {}, {}) }
 
 /**
- * Invokes the given lambda expression when the result is success.
+ * Invokes the given lambda expression when the result is success and forwards this result.
  *
  * @param[P] Type of the result's intermediate data.
  * @param[S] Type of the result's success data.
  * @param[block] The lambda expression to call.
+ * @return this result.
  */
-inline fun <P, S> LiveResult<P, S>.isSuccess(block: (data: S) -> Unit) = fold({}, block, {})
+inline fun <P, S> LiveResult<P, S>.isSuccess(block: (data: S) -> Unit) = also { it.fold({}, block, {}) }
 
 /**
- * Invokes the given lambda expression when the result is failure.
+ * Invokes the given lambda expression when the result is failure and forwards this result.
  *
  * @param[P] Type of the result's intermediate data.
  * @param[S] Type of the result's success data.
  * @param[block] The lambda expression to call.
+ * @return this result.
  */
-inline fun <P, S> LiveResult<P, S>.isFailure(block: (type: ErrorType) -> Unit) = fold({}, {}, block)
+inline fun <P, S> LiveResult<P, S>.isFailure(block: (type: ErrorType) -> Unit) = also { it.fold({}, {}, block) }
