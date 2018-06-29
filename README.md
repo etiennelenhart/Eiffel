@@ -1,5 +1,5 @@
 # Eiffel
-[![Build Status](https://www.bitrise.io/app/d982833489004cbc/status.svg?token=66rf2t84v8SFdippsAWM8g&branch=master)](https://www.bitrise.io/app/d982833489004cbc)
+[![Build Status](https://app.bitrise.io/app/d982833489004cbc/status.svg?token=66rf2t84v8SFdippsAWM8g&branch=master)](https://www.bitrise.io/app/d982833489004cbc)
 [![JitPack](https://jitpack.io/v/etiennelenhart/eiffel.svg)](https://jitpack.io/#etiennelenhart/eiffel)
 
 ![Logo](./logo_full.svg)
@@ -46,7 +46,7 @@ build.gradle *(module)*
 ```gradle
 dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation 'com.github.etiennelenhart:eiffel:3.1.0'
+    implementation 'com.github.etiennelenhart:eiffel:3.2.0'
 }
 ```
 
@@ -450,7 +450,7 @@ getMilkLevel("Whiskers").mapError {
 Similarly, to map a pending value from `LiveResult` you may use `mapPending()`.
 
 ### LiveData
-Continously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can also benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class that essentially works just like `LiveResult` does for commands. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
+Continuously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can also benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class that essentially works just like `LiveResult` does for commands. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
 ```kotlin
 class CatMilkLiveData : LiveData<Resource<MilkStatus>>() {
     ...
