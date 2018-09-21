@@ -52,7 +52,7 @@ dependencies {
 
 ## Migration
 Migration guides for breaking changes:
- * [2.0.0 → 3.0.x](./MIGRATION2-3.md)
+ * [2.0.0 → 3.x.x](./MIGRATION2-3.md)
 
 ## Architecture
 Eiffel's architecture recommendation is based on Google's [Guide to App Architecture](https://developer.android.com/jetpack/docs/guide) and therefore encourages an MVVM style. An exemplified app architecture that Eiffel facilitates is shown in the following diagram.
@@ -149,9 +149,9 @@ To process and handle an event from an `Activity` you can use a when expression 
 ```kotlin
 viewModel.state.observe(this, Observer {
     ...
-    when (it.event) {
-       is CatViewEvent.Meow -> it.event.handle { // show Meow! dialog }
-       is CatViewEvent.Sleep -> it.event.handle { // finish Activity }
+    when (val event = it.event) {
+       is CatViewEvent.Meow -> event.handle { // show Meow! dialog }
+       is CatViewEvent.Sleep -> event.handle { // finish Activity }
     }
 })
 ```
@@ -414,9 +414,9 @@ typealias FireAndForget = () -> Unit
 typealias ReturnWithStatus = () -> Result<Unit>
 typealias ReturnWithData = () -> Result<String>
 
-typealias Async = () -> Job
-typealias ReturnWithStatusAsync = () -> Deferred<Result<Unit>>
-typealias ReturnWithDataAsync = () -> Deferred<Result<String>>
+typealias Async = suspend () -> Unit
+typealias ReturnWithStatusAsync = suspend () -> Result<Unit>
+typealias ReturnWithDataAsync = suspend () -> Result<String>
 
 typealias ContinuousStatusUpdates = () -> ReceiveChannel<LiveResult<Float, Unit>>
 typealias ContinuousStatusUpdatesWithData = () -> ReceiveChannel<LiveResult<Float, String>>
