@@ -44,10 +44,16 @@ abstract class StateViewModel<T : ViewState> : ViewModel() {
      * updateState { it.copy(sample = true) }
      * ```
      *
+     * *Note: States updated with `post = true` could be emitted after later ones updated without `post`. So [currentState] may have unexpected values.*
+     *
+     * @param[post] If set to `true`, the updated state is posted to the main thread using [LiveData.postValue], defaults to `false`.
      * @param[update] Lambda expression that receives the current state and should return a new updated state.
      * @throws[KotlinNullPointerException] when the state's initial value has not been set.
      */
-    protected inline fun updateState(update: (currentState: T) -> T) {
-        (state as MutableLiveData).value = update(currentState)
+    protected inline fun updateState(post: Boolean = false, update: (currentState: T) -> T) {
+        val mutableState = state as MutableLiveData
+        val updatedState = update(currentState)
+
+        if (post) mutableState.postValue(updatedState) else mutableState.value = updatedState
     }
 }
