@@ -1,6 +1,6 @@
 package com.etiennelenhart.eiffel.binding.delegate
 
-import android.databinding.BaseObservable
+import androidx.databinding.BaseObservable
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 

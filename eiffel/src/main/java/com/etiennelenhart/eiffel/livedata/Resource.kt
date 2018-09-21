@@ -1,6 +1,6 @@
 package com.etiennelenhart.eiffel.livedata
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 import com.etiennelenhart.eiffel.ErrorType
 
 /**
