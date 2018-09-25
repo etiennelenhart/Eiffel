@@ -9,7 +9,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 28
-        buildToolsVersion "28.0.2"
+        buildToolsVersion "28.0.3"
         versionCode 29
         versionName "3.2.0"
         setProperty("archivesBaseName", "eiffel-${android.defaultConfig.versionName}")

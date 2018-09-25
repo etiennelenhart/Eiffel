@@ -241,19 +241,23 @@ class AngryCatBindingState : BindingState<AngryCatViewState> {
     }
 }
 ```
-In the `Activity` or `Fragment` the state can then be easily refreshed with a new view state:
+In the `Activity` or `Fragment` the binding state can then be easily refreshed with a new view state:
 ```kotlin
 class AngryCatActivity : AppCompatActivity() {
     ...
-    private val state = AngryCatBindingState()
+    private val bindingState = AngryCatBindingState()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel.observeState(this) { state.refresh(it) }
-        binding.state = state
+        viewModel.observeState(this, bindingState)
+        binding.state = bindingState
     }
 }
+```
+For additional view state processing not covered by the `BindingState` like `ViewEvent` handling the binding variant of `observeState()` also provides an `onChanged` parameter similar to the non-binding version:
+```kotlin
+viewModel.observeState(this, bindingState) { it /* updated view state */ }
 ```
 To use the `BindingState` in the layout XML just set it as a variable and bind the views to the respective properties:
 ```xml
