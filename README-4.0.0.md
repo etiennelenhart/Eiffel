@@ -10,7 +10,7 @@ Eiffel provides an extended `ViewModel` class with immutable state handling in c
 
 For users of Android's [Data Binding](https://developer.android.com/topic/libraries/data-binding/) framework this library adds a specialized `BindingState` to adapt an immutable state for binding and some convenience Delegated Properties for common Data Binding operations.
 
-As a bonus Eiffel offers wrapper classes with convenience functions to represent the status of business logic commands and [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) values.
+As a bonus Eiffel offers guidance on business logic commands and a wrapper class with convenience functions to represent the status of [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) values.
 
 Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](https://twitter.com/etiennelenhart).
 
@@ -30,9 +30,8 @@ Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](
 * [Data Binding](#data-binding)
   * [BindingState](#bindingstate)
   * [Delegated Properties for Binding](#delegated-properties-for-binding)
-* [Status](#status)
-  * [Commands](#commands)
-  * [LiveData](#livedata)
+* [Commands](#commands)
+* [LiveData Status](#livedata-status)
 
 ## Installation
 build.gradle *(project)*
@@ -330,8 +329,7 @@ class AngryCatActivity : AppCompatActivity() {
 }
 ```
 
-## Status
-### Commands
+## Commands
 For your business logic Eiffel encourages a variation of [Clean Architecture's](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html) Use Cases. In its essence these can be seen as interactions that receive a request and return a result. A simple interface declaration could look like this:
 ```kotlin
 // Example, not contained in Eiffel
@@ -343,18 +341,21 @@ A class with a single function that receives some parameters and returns somethi
 
 You could, of course, create a generic interface with type parameters for the request and result part, but why bother? The expression's parameters represent the "request" part. Since there is no need for a specialized interface you can supply a single request instance or every required input separately, whatever makes more sense to you.
 
-Where Eiffel tries to simplify things a bit is in the "result" part. Most of the time a command may return a single entity of data, like a primitive value or an instance of a [Data Class](https://kotlinlang.org/docs/reference/data-classes.html). The crucial point with business logic commands though is that they may be asynchronous and most importantly can just fail to complete successfully.
-
-Eiffel provides wrapper classes to associate a status to a command's result, called `Result` and `LiveResult`. They are implemented as [Sealed Classes](https://kotlinlang.org/docs/reference/sealed-classes.html) to allow processing in [When Expressions](https://kotlinlang.org/docs/reference/control-flow.html#when-expression). `Result` contains `Success` and `Error` variants; `LiveResult` consists of `Pending`, `Success` and `Failure` variants. To make working with these easy there are globally available functions to create results: `succeeded()` and `failed()` for `Result` as well as `pending()`, `success()` and `failure()` for `LiveResult`.
-
-The main difference between `Result` and `LiveResult` is the latter's ability to yield intermediate values like progress updates to the command's caller using the `Pending` variant. A `Result` may also be upgraded to a `LiveResult` using `toLive()`. One possible implementation of this can be achieved by using Kotlin's [Coroutine Channels](https://github.com/Kotlin/kotlinx.coroutines/blob/master/coroutines-guide.md#channels).
+The crucial point with business logic commands though is that they may be asynchronous and most importantly can just fail to complete successfully. Eiffel now no longer provides its own types for command results and rather encourages the use of nullable types or domain-specific data types when specific errors are needed. If you want to take a more functional approach to implementing commands, have a look at [Λrrow](https://arrow-kt.io/)'s `Try` and `Either` types.
 
 Since you'll propably want to inject commands into a `ViewModel` it's recommended to use Kotlin's [Type aliases](https://kotlinlang.org/docs/reference/type-aliases.html) for lambda expressions that represent commands. So instead of specifying the complete type of the expression, which may get clunky especially with multiple parameters, just supply the Type alias.
 
-Let's say you want to persist the number of times an angry cat has meowed already. First create Type aliases that specify the required inputs and the type of result:
+Let's say you want to persist the number of times an angry cat has meowed already. First create Type aliases that specify the required inputs and the type of result. The following example uses both nullable types and domain-specific data types for command results:
 ```kotlin
-typealias MeowCount = () -> Result<Int>
-typealias PersistMeowCount = (count: Int) -> Result<Unit>
+// Domain-specific data type
+sealed class PersistResult {
+    object Persisted : PersistResult()
+    object FileNotFound : PersistResult()
+}
+```
+```kotlin
+typealias MeowCount = () -> Int?
+typealias PersistMeowCount = (count: Int) -> PersistResult
 ```
 Then add the commands as dependencies in the respective `ViewModel`:
 ```kotlin
@@ -373,25 +374,21 @@ class CatFactory : ViewModelProvider.NewInstanceFactory() {
             food = DryFood(),
             meows = {
                 val count = // get count from SharedPreferences
-                if (/* succeeded */) {
-                    succeeded(count)
-                } else {
-                    failed(/* optional ErrorType */)
-                }
+                if (/* succeeded */) count else null
             },
             persistMeows = { count: Int ->
                 // persist count in SharedPreferences
                 if (/* succeeded */) {
-                    succeeded()
+                    PersistResult.Persisted
                 } else {
-                    failed(/* optional ErrorType */)
+                    PersistResult.FileNotFound
                 }
             }
         ) as T
     }
 }
 ```
-In the `ViewModel` the commands can then be used like any other lambda expression. Eiffel provides extension functions to react to a result depending on its status:
+In the `ViewModel` the commands can then be used like any other lambda expression and processed with Kotlin's nullability support or when expressions:
 ```kotlin
 class CatViewModel(
     private val food: CatFood,
@@ -401,77 +398,20 @@ class CatViewModel(
     ...
 
     init {
-        val meowCount = meows().fold({ it }, { -1 })
+        val meowCount = meows() ?: -1
         ...
     }
 
     fun persistCount() {
-        persistMeows(/* count */).isError { /* Process error */ }
+        when (persistMeows(/* count */)) {
+            PersistResult.FileNotFound -> // Process the error
+        }
     }
 }
 ```
-If you want to supply an `ErrorType` just create an implementation of the `ErrorType` interface as a Sealed Class and use it as a parameter for `failed()`:
-```kotlin
-sealed class SharedPreferencesError : ErrorType {
-    object : ValueNotFound : SharedPreferencesError()
-    ...
-}
 
-...
-    if (/* succeeded */) succeeded() else failed(SharedPreferencesError.ValueNotFound)
-...
-```
-
-#### Exceptions
-Sometimes it is not possible to provide all expected error types ahead of time, especially when calling platform or third party methods. Eiffel provides a handy `attempt()` function that wraps a given expression with a try catch block and automatically converts the outcome to a `Result` either containing the expression's result or an AttemptError with the thrown exception:
-```kotlin
-attempt { throw RuntimeException() }.isError { it /* is AttemptError with RuntimeException */ }
-```
-
-#### Result types
-Since Eiffel doesn't constrain commands you are completely free in specifying result types. You can even leverage the power of Kotlin's [Coroutines](https://kotlinlang.org/docs/reference/coroutines.html) to create easy to use asynchronous commands. Check below for some examples of possible combinations:
-```kotlin
-typealias FireAndForget = () -> Unit
-typealias ReturnWithStatus = () -> Result<Unit>
-typealias ReturnWithData = () -> Result<String>
-
-typealias Async = suspend () -> Unit
-typealias ReturnWithStatusAsync = suspend () -> Result<Unit>
-typealias ReturnWithDataAsync = suspend () -> Result<String>
-
-typealias ContinuousStatusUpdates = () -> ReceiveChannel<LiveResult<Float, Unit>>
-typealias ContinuousStatusUpdatesWithData = () -> ReceiveChannel<LiveResult<Float, String>>
-```
-
-#### Processing
-To keep the architecture clean your business logic should be modular. Therefore try to keep commands short and make them do one thing well. Basically adhere to the [Single responsibility principle](https://en.wikipedia.org/wiki/Single_responsibility_principle) and compose simple commands to more complex flows when needed. Eiffel provides some extension functions for command results to make this easier.
-
-To chain multiple commands together you may use the `then()` function that expects the next command as a lambda expression. If the previous command was successful, the next one is called with its data. If it failed the error is forwarded without calling the next command:
-```kotlin
-getMilk().then { fillBowl(it) }.fold({ ... }, { ... })
-```
-> Note that the `then()` call is not available for `LiveResult` since it would be unclear how to continue from a pending result.
-
-Sometimes it may be required to convert a result to another one with different data or error type. For example in order to simplify the result of a command that gets the current level of a cat's milkbowl to one that signals an empty bowl. This can be achieved by using the `map()` function which applies the given lambda expression to a command's result data:
-```kotlin
-getMilkLevel("Whiskers").map { it == 0 }.isSuccess { empty ->
-    val name = if (empty) "Hungry Whiskers" else "Happy Whiskers"
-    updateState { it.copy(name = name) }
-}
-```
-Similarly, to transform a result's error type to another domain use the `mapError()` or `mapFailure()` function:
-```kotlin
-getMilkLevel("Whiskers").mapError {
-    when (it) {
-        MilkLevelError.CatNotFound -> MilkError.UnknownCat
-        ...
-    }
-}.fold ({ ... }, { it /* is from MilkError domain */ })
-```
-Similarly, to map a pending value from `LiveResult` you may use `mapPending()`.
-
-### LiveData
-Continuously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can also benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class that essentially works just like `LiveResult` does for commands. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
+## LiveData Status
+Continuously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
 ```kotlin
 class CatMilkLiveData : LiveData<Resource<MilkStatus>>() {
     ...
