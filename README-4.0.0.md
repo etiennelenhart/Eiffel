@@ -129,7 +129,7 @@ Sometimes the `ViewState` may contain information that should only be shown once
 
 One solution would be to call a `ViewModel` function from the `Activity` that resets the triggering information in the `ViewState` to a default value and ignoring this value in the view's `onChanged` logic. While this will work for smaller projects, Eiffel provides a handy `ViewEvent`.
 
-It should be used as a `ViewState` property which may be set to the current event. For default values, it provides a `ViewEvent.None` object to indicate that there is no event to be handled. When creating ViewEvents consider using Kotlin's [Sealed Classes](https://kotlinlang.org/docs/reference/sealed-classes.html) to constrain possible events and allow easy processing in [When Expressions](https://kotlinlang.org/docs/reference/control-flow.html#when-expression):
+It should be used as a nullable `ViewState` property which may be set to the current event. When creating ViewEvents consider using Kotlin's [Sealed Classes](https://kotlinlang.org/docs/reference/sealed-classes.html) to constrain possible events and allow exhaustive processing in [When Expressions](https://kotlinlang.org/docs/reference/control-flow.html#when-expression):
 ```kotlin
 sealed class CatViewEvent : ViewEvent() {
     class Meow : CatViewEvent()
@@ -138,7 +138,7 @@ sealed class CatViewEvent : ViewEvent() {
 ```
 The `ViewEvent` can then be added to a `ViewState` as a property:
 ```kotlin
-data class CatViewState(val name: String = "", val event: ViewEvent = ViewEvent.None) : ViewState
+data class CatViewState(val name: String = "", val event: CatViewEvent? = null) : ViewState
 ```
 Now, when the `ViewModel` needs to trigger a specific event, just set the state's property to the corresponding `ViewEvent` inside `updateState`:
 ```kotlin
@@ -146,13 +146,29 @@ updateState { it.copy(event = CatViewEvent.Meow()) }
 ```
 The only violation of an immutable state that Eiffel permits is to mark a `ViewEvent` as "handled". Since these are one-off events, the possibility of inconsistent UI elements is low and the benefit of keeping the ViewModel's public functions lean prevails.
 
-To process and handle an event from an `Activity` you can use a when expression in the `onChanged` lambda expression:
+To process and handle an event from an `Activity` you can use a when expression inside the `peek()` function of a `ViewEvent`:
 ```kotlin
-viewModel.observeState(this) {
-    ...
-    when (val event = it.event) {
-       is CatViewEvent.Meow -> event.handle { // show Meow! dialog }
-       is CatViewEvent.Sleep -> event.handle { // finish Activity }
+viewModel.observeState(this) { state ->
+    state.event?.peek {
+        when (it) {
+            is CatViewEvent.Meow -> // show Meow! dialog
+            is CatViewEvent.Sleep -> // finish Activity
+        }
+        true
+    }
+}
+```
+If the event could be handled just return `true` which internally marks the `ViewEvent` as handled. Handling only some of the possible events from an observer is as easy as using `else -> false` in the when expression:
+```kotlin
+viewModel.observeState(this) { state ->
+    state.event?.peek {
+        when (it) {
+            is CatViewEvent.Meow -> {
+                // show Meow! dialog
+                true
+            }
+            else -> false
+        }
     }
 }
 ```
