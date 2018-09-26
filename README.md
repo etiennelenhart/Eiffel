@@ -95,6 +95,8 @@ When something changes and the `ViewState` needs to be refreshed, just call `upd
 updateState { it.copy(name = "Whiskers") }
 ```
 The ViewModel's state `LiveData` will then notify active observers with the new view state.
+> `updateState` can also be called from a background thread by setting its `post` parameter to `true`, which internally uses `LiveData`'s `postValue` function.
+> Just keep in mind that by their asynchronous nature, states updated with `post = true` could be emitted after later ones updated without `post`. So `currentState` may have unexpected values.
 
 #### Delegated Properties
 For easier access to ViewModels from an `Activity` Eiffel provides convenience [Delegated Properties](https://kotlinlang.org/docs/reference/delegated-properties.html). So instead of manually storing the `ViewModel` inside a lazy property and supplying a Java `Class`, use the `providedViewModel` delegate:
