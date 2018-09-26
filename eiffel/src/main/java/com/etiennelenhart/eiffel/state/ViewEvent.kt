@@ -6,7 +6,7 @@ package com.etiennelenhart.eiffel.state
  * Can be used as a property in [ViewState]s to signal an action to the observer:
  *
  * ```
- * data class SampleViewState(..., val event: ViewEvent = ViewEvent.None) : ViewState
+ * data class SampleViewState(..., val event: SampleViewEvent? = null) : ViewState
  * ```
  *
  * Extending classes are best implemented as 'sealed':
@@ -14,40 +14,37 @@ package com.etiennelenhart.eiffel.state
  * ```
  * sealed class SampleViewEvent : ViewEvent() {
  *     class ShowSample : SampleViewEvent()
+ *     class DoNotCare : SampleViewEvent()
  * }
  * ```
  *
- * Observers can then check for pending events like this:
+ * Observers can then check for unhandled events like this:
  *
  * ```
- * viewModel.state.observe(this, Observer {
- *     when (it.event) {
- *         is SampleViewEvent.ShowSample -> it.event.handle { ... }
+ * viewModel.observeState(this) { state ->
+ *     state.event?.peek {
+ *         when (it) {
+ *             is SampleViewEvent.ShowSample -> {
+ *                 ...
+ *                 true
+ *             }
+ *             else -> false
+ *         }
  *     }
- * })
+ * }
  * ```
  */
 abstract class ViewEvent {
 
-    protected var handled = false
+    private var alreadyHandled = false
 
     /**
-     * Marks this event as "handled" and calls the provided lambda expression if it has not been handled already.
+     * Allows observers to look at the event's type and decide if they can handle it.
+     *
+     * @param[handled] Lambda expression that is called when this event is unhandled. Should return `true` if the event
+     * was handled and `false` if it was ignored or could not be handled.
      */
-    fun handle(block: () -> Unit) {
-        if (!handled) {
-            handled = true
-            block()
-        }
-    }
-
-    /**
-     * Convenience [ViewEvent] to set as an initial event that requires no handling.
-     */
-    object None : ViewEvent() {
-
-        init {
-            handled = true
-        }
+    fun peek(handled: (event: ViewEvent) -> Boolean) {
+        if (!alreadyHandled) alreadyHandled = handled(this)
     }
 }
