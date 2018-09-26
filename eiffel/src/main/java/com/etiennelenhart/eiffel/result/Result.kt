@@ -10,6 +10,7 @@ import com.etiennelenhart.eiffel.result.live.success
  *
  * @param[T] Type of the returned data.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 sealed class Result<out T> {
 
     /**
@@ -19,6 +20,7 @@ sealed class Result<out T> {
      * @param[data] Data the command should return.
      * @property[data] Data the command returned.
      */
+    @Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
     class Success<out T>(val data: T) : Result<T>()
 
     /**
@@ -27,6 +29,7 @@ sealed class Result<out T> {
      * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      * @property[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      */
+    @Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
     class Error(val type: ErrorType = ErrorType.Unspecified) : Result<Nothing>()
 }
 
@@ -37,6 +40,7 @@ sealed class Result<out T> {
  * @param[data] Data the command should return.
  * @return The [Result.Success] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun <T> succeeded(data: T) = Result.Success(data)
 
 /**
@@ -44,6 +48,7 @@ fun <T> succeeded(data: T) = Result.Success(data)
  *
  * @return The [Result.Success] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun succeeded() = succeeded(Unit)
 
 /**
@@ -52,6 +57,7 @@ fun succeeded() = succeeded(Unit)
  * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
  * @return The [Result.Error] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun failed(type: ErrorType = ErrorType.Unspecified) = Result.Error(type)
 
 /**

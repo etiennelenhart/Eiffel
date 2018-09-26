@@ -8,6 +8,7 @@ import com.etiennelenhart.eiffel.ErrorType
  * @param[P] Type of intermediate data.
  * @param[S] Type of success data.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 sealed class LiveResult<out P, out S> {
 
     /**
@@ -16,6 +17,7 @@ sealed class LiveResult<out P, out S> {
      * @param[data] Intermediate data the command should yield.
      * @property[data] Intermediate data the command yielded.
      */
+    @Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
     class Pending<out P>(val data: P) : LiveResult<P, Nothing>()
 
     /**
@@ -24,6 +26,7 @@ sealed class LiveResult<out P, out S> {
      * @param[data] Data the command should return.
      * @property[data] Data the command returned.
      */
+    @Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
     class Success<out S>(val data: S) : LiveResult<Nothing, S>()
 
     /**
@@ -32,6 +35,7 @@ sealed class LiveResult<out P, out S> {
      * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      * @property[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
      */
+    @Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
     class Failure(val type: ErrorType = ErrorType.Unspecified) : LiveResult<Nothing, Nothing>()
 }
 
@@ -42,6 +46,7 @@ sealed class LiveResult<out P, out S> {
  * @param[data] Data the command should return.
  * @return The [LiveResult.Pending] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun <P> pending(data: P) = LiveResult.Pending(data)
 
 /**
@@ -49,6 +54,7 @@ fun <P> pending(data: P) = LiveResult.Pending(data)
  *
  * @return The [LiveResult.Pending] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun pending() = pending(Unit)
 
 /**
@@ -58,6 +64,7 @@ fun pending() = pending(Unit)
  * @param[data] Data the command should return.
  * @return The [LiveResult.Success] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun <S> success(data: S) = LiveResult.Success(data)
 
 /**
@@ -65,6 +72,7 @@ fun <S> success(data: S) = LiveResult.Success(data)
  *
  * @return The [LiveResult.Success] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun success() = success(Unit)
 
 /**
@@ -73,4 +81,5 @@ fun success() = success(Unit)
  * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
  * @return The [LiveResult.Failure] variant.
  */
+@Deprecated("All Result-related functionality is now deprecated. See github.com/etiennelenhart/Eiffel/blob/master/MIGRATION3-4.md#result-related-functionality for more info.")
 fun failure(type: ErrorType = ErrorType.Unspecified) = LiveResult.Failure(type)
