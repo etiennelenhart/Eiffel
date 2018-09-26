@@ -8,33 +8,46 @@ class ViewEventTest {
     class TestEvent : ViewEvent()
 
     @Test
-    fun `GIVEN ViewEvent WHEN 'handle' called THEN 'block' is invoked`() {
+    fun `GIVEN ViewEvent WHEN 'peek' called THEN 'block' is invoked`() {
         val event = TestEvent()
 
         var actual = ""
-        event.handle { actual = "block" }
+        event.peek {
+            actual = "block"
+            true
+        }
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN ViewEvent WHEN 'handle' called two times THEN second 'block' is not invoked`() {
+    fun `GIVEN ViewEvent WHEN 'peek' called two times and first was able to handle THEN second 'block' is not invoked`() {
         val event = TestEvent()
 
         var actual = ""
-        event.handle { actual = "block" }
-        event.handle { actual = "block2" }
+        event.peek {
+            actual = "block"
+            true
+        }
+        event.peek {
+            actual = "second block"
+            true
+        }
 
         assertEquals("block", actual)
     }
 
     @Test
-    fun `GIVEN handled ViewEvent WHEN 'handle' called THEN 'block' is not invoked`() {
-        val event = ViewEvent.None
+    fun `GIVEN ViewEvent WHEN 'peek' called two times and first was not able to handle THEN second 'block' is invoked`() {
+        val event = TestEvent()
 
         var actual = ""
-        event.handle { actual = "block" }
+        event.peek { false }
+        event.peek {
+            actual = "second block"
+            true
+        }
 
-        assertEquals("", actual)
+        assertEquals("second block", actual)
     }
 }
