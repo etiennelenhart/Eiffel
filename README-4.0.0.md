@@ -30,8 +30,8 @@ Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](
 * [Data Binding](#data-binding)
   * [BindingState](#bindingstate)
   * [Delegated Properties for Binding](#delegated-properties-for-binding)
-* [Commands](#commands)
 * [LiveData Status](#livedata-status)
+* [Commands](#commands)
 
 ## Installation
 build.gradle *(project)*
@@ -329,6 +329,46 @@ class AngryCatActivity : AppCompatActivity() {
 }
 ```
 
+## LiveData Status
+Continuously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
+```kotlin
+class CatMilkLiveData : LiveData<Resource<MilkStatus, MilkError>>() {
+    ...
+
+    fun statusChanged() {
+        ...
+        value = pendingValue(MilkStatus.FILLING)
+        ...
+        value = successValue(MilkStatus.FULL)
+        ...
+        value = failureValue(MilkStatus.EMPTY, MilkError.Spilled)        
+    }
+}
+```
+To process a `LiveData` resource value you may use the provided extension functions `onSuccess()`, `onPending()` and `onFailure()`. Incorporating the value into the view state can then be accomplished with a [`MediatorLiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html#merge_livedata):
+```kotlin
+class CatViewModel(..., private val milkStatus: CatMilkLiveData) : StateViewModel<CatViewState>() {
+    override val state = MediatorLiveData<CatViewState>()
+
+    init {
+        if (!stateInitialized) {
+            initState(CatViewState())
+
+            state.addSource(milkStatus, { resource ->
+                resource?
+                .onSuccess {
+                    val name = if (it == MilkStatus.FULL) "Happy Whiskers" else "Hungry Whiskers"
+                    updateState { it.copy(name = name) }
+                }
+                .onError { _, _ -> updateState { it.copy(name = "") } }
+            })
+        }
+    }
+
+    ...
+}
+```
+
 ## Commands
 For your business logic Eiffel encourages a variation of [Clean Architecture's](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html) Use Cases. In its essence these can be seen as interactions that receive a request and return a result. A simple interface declaration could look like this:
 ```kotlin
@@ -407,43 +447,5 @@ class CatViewModel(
             PersistResult.FileNotFound -> // Process the error
         }
     }
-}
-```
-
-## LiveData Status
-Continuously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
-```kotlin
-class CatMilkLiveData : LiveData<Resource<MilkStatus>>() {
-    ...
-
-    fun statusChanged() {
-        ...
-        value = pendingValue(MilkStatus.FILLING)
-        ...
-        value = successValue(MilkStatus.FULL)
-        ...
-        value = failureValue(MilkStatus.EMPTY, MilkError.Spilled)        
-    }
-}
-```
-To process a `LiveData` resource value you may use the provided extension functions `fold()`, `isSuccess()`, `isPending()` and `isFailure()`. Incorporating the value into the view state can then be accomplished with a [`MediatorLiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html#merge_livedata):
-```kotlin
-class CatViewModel(..., private val milkStatus: CatMilkLiveData) : StateViewModel<CatViewState>() {
-    override val state = MediatorLiveData<CatViewState>()
-
-    init {
-        if (!stateInitialized) {
-            initState(CatViewState())
-
-            state.addSource(milkStatus, { resource ->
-                resource?.isSuccess {
-                    val name = if (it == MilkStatus.FULL) "Happy Whiskers" else "Hungry Whiskers"
-                    updateState { it.copy(name = name) }
-                }
-            })
-        }
-    }
-
-    ...
 }
 ```

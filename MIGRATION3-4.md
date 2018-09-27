@@ -96,3 +96,19 @@ The drawback here of course is the lack of easy chaining.
 If you need both easy chaining of commands and specific errors, functional programming types like `Try` and `Either` are a good fit. [Λrrow](https://arrow-kt.io/) is becoming the de-facto standard for functional programming with Kotlin. It provides `Try`, `Either` and a whole lot more, which more than compensate for Eiffel's result classes. It also increases interoperability, since in contrast to Eiffel, Λrrow may also be used to develop library code.
 
 If your project heavily depends on Eiffel's implementation and the above alternatives don't cut it, feel free to contact me on Twitter [@etiennelenhart](https://twitter.com/etiennelenhart) or create an issue and if there are good reasons, it may be added back.
+
+### Resource
+Following the deprecation of the result functionality `Resource` has also been changed. It is now possible to provide your own type instead of having to extend `ErrorType`, so `Resource` takes two type parameters:
+```kotlin
+class CatMilkLiveData : LiveData<Resource<MilkStatus>>() { ... } // no longer supported
+class CatMilkLiveData : LiveData<Resource<MilkStatus, MilkError>>() { ... }
+```
+`fold()` has also been removed to stay in line with not imposing a functional programming style. To accomomdate this, `isSuccess`, `isPending` and `isFailure` are now prefixed with `on` instead of `is` and pass through the `Resource`. This allows for a more dynamic handling of status types:
+```kotlin
+resource?
+    .onSuccess {
+        val name = if (it == MilkStatus.FULL) "Happy Whiskers" else "Hungry Whiskers"
+        updateState { it.copy(name = name) }
+    }
+    .onError { _, _ -> updateState { it.copy(name = "") } }
+```

@@ -1,37 +1,38 @@
 package com.etiennelenhart.eiffel.livedata
 
 import androidx.lifecycle.LiveData
-import com.etiennelenhart.eiffel.ErrorType
 
 /**
  * Wrapper class to associate a status to a LiveData value.
  *
- * @param[T] Type of the LiveData's value.
+ * @param[V] Type of the LiveData's value.
+ * @param[E] Type of error for [Resource.Failure].
  * @property[value] LiveData's actual value.
  */
-sealed class Resource<out T>(val value: T) {
+sealed class Resource<out V, out E>(val value: V) {
+
     /**
      * Resource variant signaling a successful LiveData value.
      *
      * @param[value] Actual value.
      */
-    class Success<out T>(value: T) : Resource<T>(value)
+    class Success<out V>(value: V) : Resource<V, Nothing>(value)
 
     /**
      * Resource variant signaling a pending LiveData value.
      *
      * @param[value] Actual value.
      */
-    class Pending<out T>(value: T) : Resource<T>(value)
+    class Pending<out V>(value: V) : Resource<V, Nothing>(value)
 
     /**
      * Resource variant signaling a failed LiveData value.
      *
      * @param[value] Actual value.
-     * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
-     * @property[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
+     * @param[error] Error that occurred.
+     * @property[error] Error that occurred.
      */
-    class Failure<out T>(value: T, val type: ErrorType = ErrorType.Unspecified) : Resource<T>(value)
+    class Failure<out V, out E>(value: V, val error: E) : Resource<V, E>(value)
 }
 
 /**
@@ -40,7 +41,7 @@ sealed class Resource<out T>(val value: T) {
  * @param[value] LiveData's actual value.
  * @return The [Resource.Success] variant.
  */
-fun <T> LiveData<Resource<T>>.successValue(value: T) = Resource.Success(value)
+fun <T> LiveData<Resource<T, *>>.successValue(value: T) = Resource.Success(value)
 
 /**
  * Convenience function to create a [Resource.Pending] variant.
@@ -48,13 +49,13 @@ fun <T> LiveData<Resource<T>>.successValue(value: T) = Resource.Success(value)
  * @param[value] LiveData's actual value.
  * @return The [Resource.Pending] variant.
  */
-fun <T> LiveData<Resource<T>>.pendingValue(value: T) = Resource.Pending(value)
+fun <T> LiveData<Resource<T, *>>.pendingValue(value: T) = Resource.Pending(value)
 
 /**
  * Convenience function to create a [Resource.Failure] variant.
  *
  * @param[value] LiveData's actual value.
- * @param[type] Optional [ErrorType]. Defaults to [ErrorType.Unspecified].
+ * @param[error] Error that occurred.
  * @return The [Resource.Failure] variant.
  */
-fun <T> LiveData<Resource<T>>.failureValue(value: T, type: ErrorType = ErrorType.Unspecified) = Resource.Failure(value, type)
+fun <T, E> LiveData<Resource<T, E>>.failureValue(value: T, error: E) = Resource.Failure(value, error)
