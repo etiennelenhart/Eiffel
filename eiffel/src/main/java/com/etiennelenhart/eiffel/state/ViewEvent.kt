@@ -44,7 +44,7 @@ abstract class ViewEvent {
      * @param[handled] Lambda expression that is called when this event is unhandled. Should return `true` if the event
      * was handled and `false` if it was ignored or could not be handled.
      */
-    fun peek(handled: (event: ViewEvent) -> Boolean) {
-        if (!alreadyHandled) alreadyHandled = handled(this)
+    fun peek(handled: () -> Boolean) {
+        if (!alreadyHandled) alreadyHandled = handled()
     }
 }
