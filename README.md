@@ -145,11 +145,11 @@ updateState { it.copy(event = CatViewEvent.Meow()) }
 ```
 The only violation of an immutable state that Eiffel permits is to mark a `ViewEvent` as "handled". Since these are one-off events, the possibility of inconsistent UI elements is low and the benefit of keeping the ViewModel's public functions lean prevails.
 
-To process and handle an event from an `Activity` you can use a when expression inside the `peek()` function of a `ViewEvent`:
+To process and handle an event from an `Activity` you can use a when expression inside the `peek()` extension function of a `ViewEvent`:
 ```kotlin
-viewModel.observeState(this) {
-    it.event?.peek {
-        when (it.event) {
+viewModel.observeState(this) { state ->
+    state.event?.peek {
+        when (it) {
             is CatViewEvent.Meow -> {
                 // show Meow! dialog
                 true
@@ -164,9 +164,9 @@ viewModel.observeState(this) {
 ```
 If the event could be handled just return `true` which internally marks the `ViewEvent` as handled. Handling only some of the possible events from an observer is as easy as using `else -> false` in the when expression:
 ```kotlin
-viewModel.observeState(this) {
-    it.event?.peek {
-        when (it.event) {
+viewModel.observeState(this) { state ->
+    state.event?.peek {
+        when (it) {
             is CatViewEvent.Meow -> {
                 // show Meow! dialog
                 true
