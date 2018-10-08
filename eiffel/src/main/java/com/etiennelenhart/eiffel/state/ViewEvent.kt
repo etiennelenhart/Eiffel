@@ -21,9 +21,9 @@ package com.etiennelenhart.eiffel.state
  * Observers can then check for unhandled events like this:
  *
  * ```
- * viewModel.observeState(this) {
- *     it.event?.peek {
- *         when (it.event) {
+ * viewModel.observeState(this) { state ->
+ *     state.event?.peek {
+ *         when (it) {
  *             is SampleViewEvent.ShowSample -> {
  *                 ...
  *                 true
@@ -33,18 +33,20 @@ package com.etiennelenhart.eiffel.state
  *     }
  * }
  * ```
+ *
+ * @property[handled] `true` if this event has been handled.
  */
 abstract class ViewEvent {
 
-    private var alreadyHandled = false
+    var handled = false
+}
 
-    /**
-     * Allows observers to look at the event's type and decide if they can handle it.
-     *
-     * @param[handled] Lambda expression that is called when this event is unhandled. Should return `true` if the event
-     * was handled and `false` if it was ignored or could not be handled.
-     */
-    fun peek(handled: () -> Boolean) {
-        if (!alreadyHandled) alreadyHandled = handled()
-    }
+/**
+ * Allows observers to look at the event's type and decide if they can handle it.
+ *
+ * @param[handled] Lambda expression that is called with an unhandled event. Should return `true` if the event
+ * was handled and `false` if it was ignored or could not be handled.
+ */
+fun <T : ViewEvent> T.peek(handled: (event: T) -> Boolean) {
+    if (!this.handled) this.handled = handled(this)
 }

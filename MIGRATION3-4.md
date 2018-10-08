@@ -34,9 +34,9 @@ viewModel.state.observe(this, Observer {
 ```
 New way with support for exhaustive when expressions:
 ```kotlin
-viewModel.observeState(this) {
-    it.event?.peek {
-        when (it.event) {
+viewModel.observeState(this) { state ->
+    state.event?.peek {
+        when (it) {
             is CatViewEvent.Meow -> {
                 // show Meow! dialog
                 true
@@ -51,9 +51,9 @@ viewModel.observeState(this) {
 ```
 To handle only some of the possible events just use `else -> false` in the when expression:
 ```kotlin
-viewModel.observeState(this) {
-    it.event?.peek {
-        when (it.event) {
+viewModel.observeState(this) { state ->
+    state.event?.peek {
+        when (it) {
             is CatViewEvent.Meow -> {
                 // show Meow! dialog
                 true
