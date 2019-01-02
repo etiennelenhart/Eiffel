@@ -33,12 +33,10 @@ package com.etiennelenhart.eiffel.state
  *     }
  * }
  * ```
- *
- * @property[handled] `true` if this event has been handled.
  */
 abstract class ViewEvent {
 
-    var handled = false
+    internal var handled = false
 }
 
 /**
