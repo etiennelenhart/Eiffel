@@ -41,7 +41,7 @@ sealed class Resource<out V, out E>(val value: V) {
  * @param[value] LiveData's actual value.
  * @return The [Resource.Success] variant.
  */
-fun <T> LiveData<Resource<T, *>>.successValue(value: T) = Resource.Success(value)
+fun <T, E> LiveData<Resource<T, E>>.successValue(value: T) = Resource.Success(value)
 
 /**
  * Convenience function to create a [Resource.Pending] variant.
@@ -49,7 +49,7 @@ fun <T> LiveData<Resource<T, *>>.successValue(value: T) = Resource.Success(value
  * @param[value] LiveData's actual value.
  * @return The [Resource.Pending] variant.
  */
-fun <T> LiveData<Resource<T, *>>.pendingValue(value: T) = Resource.Pending(value)
+fun <T, E> LiveData<Resource<T, E>>.pendingValue(value: T) = Resource.Pending(value)
 
 /**
  * Convenience function to create a [Resource.Failure] variant.
