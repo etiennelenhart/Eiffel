@@ -7,7 +7,7 @@ group = 'com.github.etiennelenhart'
 android {
     compileSdkVersion 28
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 14
         targetSdkVersion 28
         buildToolsVersion "28.0.3"
         versionCode 31
