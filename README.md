@@ -30,6 +30,7 @@ Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](
 * [Data Binding](#data-binding)
   * [BindingState](#bindingstate)
   * [Delegated Properties for Binding](#delegated-properties-for-binding)
+  * [About Two-way Binding](#about-two-way-binding)
 * [LiveData Status](#livedata-status)
 * [Commands](#commands)
 
@@ -45,14 +46,14 @@ build.gradle *(module)*
 ```gradle
 dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation 'com.github.etiennelenhart:eiffel:4.0.0'
+    implementation 'com.github.etiennelenhart:eiffel:4.1.0'
 }
 ```
 
 ## Migration
 Migration guides for breaking changes:
  * [2.0.0 → 3.x.x](./MIGRATION2-3.md)
- * [3.x.x → 4.0.0](./MIGRATION3-4.md)
+ * [3.x.x → 4.x.x](./MIGRATION3-4.md)
 
 ## Architecture
 Eiffel's architecture recommendation is based on Google's [Guide to App Architecture](https://developer.android.com/jetpack/docs/guide) and therefore encourages an MVVM style. An exemplified app architecture that Eiffel facilitates is shown in the following diagram.
@@ -78,13 +79,13 @@ class CatViewModel : StateViewModel<CatViewState>() {
     ...
 }
 ```
-Then initialize the `ViewState` when the `ViewModel` is constructed. Just call `initState()` with an instance of the associated `ViewState`. `StateViewModel` provides a `stateInitialized` property to check whether a state has already been initialized. The current `ViewState` is then easily accessible from inside the `ViewModel` in its `currentState` property.
+Then initialize the `ViewState` when the `ViewModel` is constructed. Just call `initState {}` and return an instance of the associated `ViewState` from its lambda parameter. `StateViewModel` provides a `stateInitialized` property to check whether a state has already been initialized. The current `ViewState` is then easily accessible from inside the `ViewModel` in its `currentState` property.
 ```kotlin
 class CatViewModel : StateViewModel<CatViewState>() {
     override val state = MutableLiveData<CatViewState>()
 
     init {
-        initState(CatViewState())
+        initState { CatViewState() }
         stateInitialized // true
     }
     ...
@@ -261,7 +262,7 @@ class AngryCatBindingState : BindingState<AngryCatViewState> {
     }
 }
 ```
-In the `Activity` or `Fragment` the binding state can then be easily refreshed with a new view state:
+In the `Activity` the binding state can then be easily refreshed with a new view state:
 ```kotlin
 class AngryCatActivity : AppCompatActivity() {
     ...
@@ -334,6 +335,11 @@ class AngryCatActivity : AppCompatActivity() {
 }
 ```
 
+### About Two-way Binding
+As you may have noticed, setters for properties of a `BindingState` should be private. Since Eiffel is all about immutability, setting any properties by using Two-way binding is discouraged. Depending on your use case, there are two simple alternatives:
+ 1. Since Android already takes care of restoring the state of views like `EditText`, most of the time it's enough to capture all required values from inside a click listener and call a `ViewModel` function.
+ 2. If you need the respective values inside the `ViewState`, register a change listener like `TextChangedListener` and call a `ViewModel` function to update the state.
+
 ## LiveData Status
 Continuously updated information that observers may subscribe to like Architecture Components' [`LiveData`](https://developer.android.com/topic/libraries/architecture/livedata.html) can benefit from an associated status. It even gets briefly mentioned in Android Developers' [Guide to App Architecture]([`LiveData`](https://developer.android.com/jetpack/docs/guide#addendum)). Eiffel contains a simple `Resource` Sealed Class. Just wrap the LiveData's value type with a `Resource` and internally update the value with one of its variants by using one of the available functions:
 ```kotlin
@@ -357,7 +363,7 @@ class CatViewModel(..., private val milkStatus: CatMilkLiveData) : StateViewMode
 
     init {
         if (!stateInitialized) {
-            initState(CatViewState())
+            initState { CatViewState() }
 
             state.addSource(milkStatus, { resource ->
                 resource?
