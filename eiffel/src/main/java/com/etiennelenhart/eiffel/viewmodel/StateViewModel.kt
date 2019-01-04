@@ -29,16 +29,6 @@ abstract class StateViewModel<T : ViewState> : ViewModel() {
     /**
      * Sets the initial view state if not already initialized.
      *
-     * @param[viewState] Initial view state.
-     */
-    @Deprecated("Use initState with lambda parameter", replaceWith = ReplaceWith("initState { viewState }"))
-    protected fun initState(viewState: T) {
-        if (!stateInitialized) state.value = viewState
-    }
-
-    /**
-     * Sets the initial view state if not already initialized.
-     *
      * @param[viewState] Lambda expression returning the initial view state. Only called if state not initialized.
      */
     protected inline fun initState(viewState: () -> T) {
