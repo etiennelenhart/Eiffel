@@ -4,6 +4,12 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.etiennelenhart'
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xuse-experimental=kotlin.Experimental"]
+    }
+}
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -29,8 +35,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0"
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "androidx.arch.core:core-testing:2.0.0"
 
     implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
 }

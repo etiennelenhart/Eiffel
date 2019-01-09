@@ -3,21 +3,22 @@ package com.etiennelenhart.eiffel.viewmodel
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
-import com.etiennelenhart.eiffel.state.ViewState
+import com.etiennelenhart.eiffel.state.State
 
 /**
- * A [ViewModel] with an observable view state.
+ * A [ViewModel] with an observable state.
  *
  * To ensure an immutable state, always set a new state using the
  * [updateState] function and calling copy(...) on the provided current state.
  *
- * @param[T] Type of associated view state.
- * @property[state] Observable view state.
- * @property[stateInitialized] `true` when an initial view state has been set.
- * @property[currentState] Current value of the view state.
+ * @param[T] Type of associated state.
+ * @property[state] Observable state.
+ * @property[stateInitialized] `true` when an initial state has been set.
+ * @property[currentState] Current value of the state.
  * Throws [KotlinNullPointerException] when the state's initial value has not been set.
  */
-abstract class StateViewModel<T : ViewState> : ViewModel() {
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel.")
+abstract class StateViewModel<T : State> : ViewModel() {
 
     protected abstract val state: MutableLiveData<T>
 

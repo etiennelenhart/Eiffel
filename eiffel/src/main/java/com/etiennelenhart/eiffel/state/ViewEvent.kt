@@ -1,15 +1,15 @@
 package com.etiennelenhart.eiffel.state
 
 /**
- * Base class for one-off view model actions that require an Activity.
+ * Base class for one-off state events that require a view interaction.
  *
- * Can be used as a property in [ViewState]s to signal an action to the observer:
+ * Can be used as a property in [State]s to signal an event to the observer:
  *
  * ```
- * data class SampleViewState(..., val event: SampleViewEvent? = null) : ViewState
+ * data class SampleState(..., val event: SampleViewEvent? = null) : State
  * ```
  *
- * Extending classes are best implemented as 'sealed':
+ * Extending classes are best declared as 'sealed':
  *
  * ```
  * sealed class SampleViewEvent : ViewEvent() {
