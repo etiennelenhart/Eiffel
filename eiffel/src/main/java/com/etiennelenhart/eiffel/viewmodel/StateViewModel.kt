@@ -17,6 +17,7 @@ import com.etiennelenhart.eiffel.state.State
  * @property[currentState] Current value of the state.
  * Throws [KotlinNullPointerException] when the state's initial value has not been set.
  */
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel.")
 abstract class StateViewModel<T : State> : ViewModel() {
 
     protected abstract val state: MutableLiveData<T>
