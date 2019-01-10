@@ -25,21 +25,24 @@ class EiffelViewModelTest {
         class Add(val amount: Int) : TestAction()
     }
 
-    private fun updateTestState(state: TestState, action: TestAction): TestState {
-        val count = state.count
-        return when (action) {
-            TestAction.Increment -> state.copy(count = count + 1)
-            TestAction.Decrement -> state.copy(count = count - 1)
-            is TestAction.Add -> state.copy(count = count + action.amount)
+    object TestStateUpdate : Update<TestState, TestAction> {
+
+        override fun invoke(state: TestState, action: TestAction): TestState {
+            val count = state.count
+            return when (action) {
+                TestAction.Increment -> state.copy(count = count + 1)
+                TestAction.Decrement -> state.copy(count = count - 1)
+                is TestAction.Add -> state.copy(count = count + action.amount)
+            }
         }
     }
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
-    class TestViewModel(update: Update<TestState, TestAction>) : EiffelViewModel<TestState, TestAction>(TestState(), update, Dispatchers.Unconfined)
+    class TestViewModel : EiffelViewModel<TestState, TestAction>(TestState(), TestStateUpdate, dispatcher = Dispatchers.Unconfined)
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called THEN 'action' is processed`() {
-        val viewModel = TestViewModel(::updateTestState)
+        val viewModel = TestViewModel()
 
         var actual = 0
         viewModel.observeStateForever { actual = it.count }
@@ -50,7 +53,7 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called multiple times THEN all 'actions' are processed`() {
-        val viewModel = TestViewModel(::updateTestState)
+        val viewModel = TestViewModel()
 
         var actual = 0
         viewModel.observeStateForever { actual = it.count }
@@ -71,7 +74,7 @@ class EiffelViewModelTest {
     @Test
     fun `GIVEN EiffelViewModel subclass with a source 'LiveData' WHEN 'observeStateForever' called THEN updated state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), ::updateTestState, Dispatchers.Unconfined) {
+        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), TestStateUpdate, dispatcher = Dispatchers.Unconfined) {
             init {
                 addStateSource(OneLiveData()) { TestAction.Add(it) }
             }
@@ -86,7 +89,7 @@ class EiffelViewModelTest {
     @Test
     fun `GIVEN EiffelViewModel subclass with a removed source 'LiveData' WHEN 'observeStateForever' called THEN initial state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), ::updateTestState, Dispatchers.Unconfined) {
+        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), TestStateUpdate, dispatcher = Dispatchers.Unconfined) {
             init {
                 val source = OneLiveData()
                 addStateSource(source) { TestAction.Add(it) }

@@ -17,7 +17,7 @@ import kotlinx.coroutines.channels.consumeEach
  * @param[S] Type of associated state.
  * @param[A] Type of supported actions.
  * @param[initialState] Initial state to set when view model is created.
- * @param[update] Function to update the state according to the given action.
+ * @param[update] Used to update the state according to an action.
  * @param[dispatcher] [CoroutineDispatcher] to use for action dispatching, defaults to [Dispatchers.Default]. Mainly used for testing.
  */
 abstract class EiffelViewModel<S : State, A : Action>(
@@ -27,9 +27,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
 ) : ViewModel() {
 
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
-
     private val state = MediatorLiveData<S>()
-
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(capacity = Channel.UNLIMITED) {
         channel.consumeEach { action ->

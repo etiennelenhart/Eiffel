@@ -1,15 +1,23 @@
 package com.etiennelenhart.eiffel.state
 
+import com.etiennelenhart.eiffel.action.Action
+
 /**
- * Function used to update the state according to the given action.
+ * When invoked, should update the provided state according to the given action.
  *
  * Example:
  *
  * ```
- * fun updateSampleState(state: SampleState, action: SampleAction) = when (action) {
- *     DoSample -> state.copy(doing = "something")
- *     is UpdateSample -> state.copy(sample = action.sample)
+ * class SampleStateUpdate : Update<SampleState, SampleAction> {
+ *
+ *     override fun invoke(state: SampleState, action: SampleAction) = when (action) {
+ *         DoSample -> state.copy(doing = "something")
+ *         is UpdateSample -> state.copy(sample = action.sample)
+ *     }
  * }
  * ```
  */
-typealias Update<State, Action> = (State, Action) -> State
+interface Update<S : State, A : Action> {
+
+    operator fun invoke(state: S, action: A): S
+}
