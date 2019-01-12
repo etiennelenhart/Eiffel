@@ -2,7 +2,7 @@ package com.etiennelenhart.eiffel.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
-import com.etiennelenhart.eiffel.action.Action
+import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
 import kotlinx.coroutines.Dispatchers

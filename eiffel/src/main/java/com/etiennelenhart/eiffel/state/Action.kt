@@ -1,4 +1,4 @@
-package com.etiennelenhart.eiffel.action
+package com.etiennelenhart.eiffel.state
 
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
 

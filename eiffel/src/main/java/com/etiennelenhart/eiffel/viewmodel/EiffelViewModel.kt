@@ -3,7 +3,7 @@ package com.etiennelenhart.eiffel.viewmodel
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
-import com.etiennelenhart.eiffel.action.Action
+import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
 import kotlinx.coroutines.*

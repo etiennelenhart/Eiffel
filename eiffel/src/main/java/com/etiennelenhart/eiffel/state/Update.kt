@@ -1,7 +1,5 @@
 package com.etiennelenhart.eiffel.state
 
-import com.etiennelenhart.eiffel.action.Action
-
 /**
  * When invoked, should update the provided state according to the given action.
  *
