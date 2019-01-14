@@ -3,7 +3,9 @@ package com.etiennelenhart.eiffel.viewmodel
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
-import com.etiennelenhart.eiffel.action.Action
+import com.etiennelenhart.eiffel.interception.Interception
+import com.etiennelenhart.eiffel.interception.Next
+import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
 import kotlinx.coroutines.*
@@ -14,34 +16,52 @@ import kotlinx.coroutines.channels.consumeEach
 /**
  * A [ViewModel] supporting an observable state and dispatching of actions to update this state.
  *
- * @param[S] Type of associated state.
- * @param[A] Type of supported actions.
+ * @param[S] Type of associated [State].
+ * @param[A] Type of supported [Action]s.
  * @param[initialState] Initial state to set when view model is created.
- * @param[update] Function to update the state according to the given action.
- * @param[dispatcher] [CoroutineDispatcher] to use for action dispatching, defaults to [Dispatchers.Default]. Mainly used for testing.
+ * @param[update] Used to update the state according to an action.
+ * @param[interceptions] Chain of [Interception] objects to apply to a dispatched [Action].
+ * @param[interceptionDispatcher] [CoroutineDispatcher] to use for interception invocation, defaults to [Dispatchers.IO].
+ * @param[actionDispatcher] [CoroutineDispatcher] to use for action dispatching, defaults to [Dispatchers.Default]. Mainly used for testing.
  */
 abstract class EiffelViewModel<S : State, A : Action>(
         initialState: S,
         private val update: Update<S, A>,
-        dispatcher: CoroutineDispatcher = Dispatchers.Default
+        private val interceptions: List<Interception<S, A>> = emptyList(),
+        private val interceptionDispatcher: CoroutineDispatcher = Dispatchers.IO,
+        private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
-
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val state = MediatorLiveData<S>()
-
     @UseExperimental(ObsoleteCoroutinesApi::class)
-    private val dispatchActor = scope.actor<A>(capacity = Channel.UNLIMITED) {
-        channel.consumeEach { action ->
-            state.value!!.let { currentState ->
-                val updatedState = update(currentState, action)
-                if (updatedState != currentState) state.value = updatedState
-            }
+    private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
+        channel.consumeEach {
+            val currentState = state.value!!
+            val action = applyInterceptions(currentState, it)
+            applyUpdate(currentState, action)
         }
     }
 
     init {
         state.value = initialState
+    }
+
+    private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
+        next(0).invoke(scope, currentState, action, ::dispatch)
+    }
+
+    private fun next(index: Int): Next<S, A> {
+        return if (index == interceptions.size) {
+            { _, _, action, _ -> action }
+        } else {
+            { scope, state, action, dispatch -> interceptions[index].invoke(scope, state, action, dispatch, next(index + 1)) }
+        }
+    }
+
+    private fun applyUpdate(currentState: S, action: A) {
+        val updatedState = update(currentState, action)
+        if (updatedState != currentState) state.postValue(updatedState)
     }
 
     /**
@@ -70,7 +90,9 @@ abstract class EiffelViewModel<S : State, A : Action>(
     /**
      * Dispatches the given action by queuing it up for being processed by the state [update].
      */
-    fun dispatch(action: A) = scope.launch { dispatchActor.send(action) }
+    fun dispatch(action: A) {
+        scope.launch(actionDispatcher) { dispatchActor.send(action) }
+    }
 
     /**
      * Used to observe this [EiffelViewModel]'s state from a [LifecycleOwner] like [FragmentActivity] or [Fragment].

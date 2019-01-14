@@ -2,15 +2,20 @@ package com.etiennelenhart.eiffel.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
-import com.etiennelenhart.eiffel.action.Action
+import com.etiennelenhart.eiffel.interception.Interception
+import com.etiennelenhart.eiffel.interception.Next
+import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
+import com.etiennelenhart.eiffel.state.update
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class EiffelViewModelTest {
 
@@ -25,21 +30,19 @@ class EiffelViewModelTest {
         class Add(val amount: Int) : TestAction()
     }
 
-    private fun updateTestState(state: TestState, action: TestAction): TestState {
+    val testStateUpdate = update<TestState, TestAction> { state, action ->
         val count = state.count
-        return when (action) {
+        when (action) {
             TestAction.Increment -> state.copy(count = count + 1)
             TestAction.Decrement -> state.copy(count = count - 1)
             is TestAction.Add -> state.copy(count = count + action.amount)
         }
     }
 
-    @UseExperimental(ExperimentalCoroutinesApi::class)
-    class TestViewModel(update: Update<TestState, TestAction>) : EiffelViewModel<TestState, TestAction>(TestState(), update, Dispatchers.Unconfined)
-
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called THEN 'action' is processed`() {
-        val viewModel = TestViewModel(::updateTestState)
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
 
         var actual = 0
         viewModel.observeStateForever { actual = it.count }
@@ -50,7 +53,8 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called multiple times THEN all 'actions' are processed`() {
-        val viewModel = TestViewModel(::updateTestState)
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
 
         var actual = 0
         viewModel.observeStateForever { actual = it.count }
@@ -71,7 +75,7 @@ class EiffelViewModelTest {
     @Test
     fun `GIVEN EiffelViewModel subclass with a source 'LiveData' WHEN 'observeStateForever' called THEN updated state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), ::updateTestState, Dispatchers.Unconfined) {
+        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {
             init {
                 addStateSource(OneLiveData()) { TestAction.Add(it) }
             }
@@ -86,7 +90,7 @@ class EiffelViewModelTest {
     @Test
     fun `GIVEN EiffelViewModel subclass with a removed source 'LiveData' WHEN 'observeStateForever' called THEN initial state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), ::updateTestState, Dispatchers.Unconfined) {
+        val viewModel = object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {
             init {
                 val source = OneLiveData()
                 addStateSource(source) { TestAction.Add(it) }
@@ -98,5 +102,70 @@ class EiffelViewModelTest {
         viewModel.observeStateForever { actual = it.count }
 
         assertEquals(0, actual)
+    }
+
+    data class InterceptionState(val correct: Boolean = false) : State
+
+    sealed class InterceptionAction : Action {
+        object First : InterceptionAction()
+        object Second : InterceptionAction()
+        object Third : InterceptionAction()
+    }
+
+    object InterceptionStateUpdate : Update<InterceptionState, InterceptionAction> {
+        override fun invoke(state: InterceptionState, action: InterceptionAction) = when (action) {
+            InterceptionAction.Third -> state.copy(correct = true)
+            else -> state
+        }
+    }
+
+    val firstInterception = object : Interception<InterceptionState, InterceptionAction> {
+        override suspend fun invoke(
+                scope: CoroutineScope,
+                state: InterceptionState,
+                action: InterceptionAction,
+                dispatch: (action: InterceptionAction) -> Unit,
+                next: Next<InterceptionState, InterceptionAction>
+        ): InterceptionAction {
+            return if (action is InterceptionAction.First) {
+                next(scope, state, InterceptionAction.Second, dispatch)
+            } else {
+                action
+            }
+        }
+    }
+
+    val secondInterception = object : Interception<InterceptionState, InterceptionAction> {
+        override suspend fun invoke(
+                scope: CoroutineScope,
+                state: InterceptionState,
+                action: InterceptionAction,
+                dispatch: (action: InterceptionAction) -> Unit,
+                next: Next<InterceptionState, InterceptionAction>
+        ): InterceptionAction {
+            return if (action is InterceptionAction.Second) {
+                next(scope, state, InterceptionAction.Third, dispatch)
+            } else {
+                action
+            }
+        }
+    }
+
+    @Test
+    fun `GIVEN EiffelViewModel subclass with interceptions WHEN 'dispatch' called THEN all interceptions are applied`() {
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(
+                InterceptionState(),
+                InterceptionStateUpdate,
+                listOf(firstInterception, secondInterception),
+                Dispatchers.Unconfined,
+                Dispatchers.Unconfined
+        ) {}
+
+        var actual = false
+        viewModel.observeStateForever { actual = it.correct }
+        viewModel.dispatch(InterceptionAction.First)
+
+        assertTrue(actual)
     }
 }

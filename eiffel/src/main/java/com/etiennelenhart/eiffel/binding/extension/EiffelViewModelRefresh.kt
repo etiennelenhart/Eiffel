@@ -3,7 +3,7 @@ package com.etiennelenhart.eiffel.binding.extension
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import com.etiennelenhart.eiffel.action.Action
+import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.binding.BindingState
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
