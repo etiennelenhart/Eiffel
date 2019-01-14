@@ -9,7 +9,8 @@ import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
  *
  * ```
  * sealed class SampleAction : Action {
- *     object DoSample : SampleAction()
+ *     class DoSample(val index: Int) : SampleAction()
+ *     object DoingSample : SampleAction()
  *     class UpdateSample(val sample: String) : SampleAction()
  * }
  * ```
