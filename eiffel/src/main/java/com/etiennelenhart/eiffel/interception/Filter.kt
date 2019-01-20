@@ -17,7 +17,7 @@ abstract class Filter<S : State, A : Action> : Interception<S, A> {
      *
      * @return `true` if received [Action] should be forwarded, `false` otherwise.
      */
-    protected abstract val predicate: (state: S, action: A) -> Boolean
+    protected abstract val predicate: suspend (state: S, action: A) -> Boolean
 
     final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A {
         return if (predicate(state, action)) next(scope, state, action, dispatch) else action
@@ -33,7 +33,7 @@ abstract class Filter<S : State, A : Action> : Interception<S, A> {
  * `false` otherwise.
  * @return An object extending [Filter].
  */
-fun <S : State, A : Action> filter(predicate: (state: S, action: A) -> Boolean): Filter<S, A> {
+fun <S : State, A : Action> filter(predicate: suspend (state: S, action: A) -> Boolean): Filter<S, A> {
     return object : Filter<S, A>() {
         override val predicate = predicate
     }
