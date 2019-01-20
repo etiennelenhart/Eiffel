@@ -33,6 +33,8 @@ abstract class Pipe<S : State, A : Action> : Interception<S, A> {
 /**
  * Convenience builder function that returns an object extending [Pipe]. Passes provided lambdas to overridden properties.
  *
+ * @param[S] Type of [State] to receive.
+ * @param[A] Type of supported [Action].
  * @param[before] Lambda expression called with the current [State] and received [Action].
  * @param[after] Lambda expression called with the current [State] and updated [Action] from next item.
  * @return An object extending [Pipe].

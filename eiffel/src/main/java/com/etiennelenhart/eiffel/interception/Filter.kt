@@ -27,6 +27,8 @@ abstract class Filter<S : State, A : Action> : Interception<S, A> {
 /**
  * Convenience builder function that returns an object extending [Filter]. Passes provided lambda to overridden property.
  *
+ * @param[S] Type of [State] to receive.
+ * @param[A] Type of supported [Action].
  * @param[predicate] Lambda expression called with the current [State] and received [Action]. Return `true` if received [Action] should be forwarded,
  * `false` otherwise.
  * @return An object extending [Filter].
