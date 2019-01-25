@@ -9,6 +9,7 @@ import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
+import com.etiennelenhart.eiffel.util.distinctUntilChanged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
@@ -101,9 +102,27 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * @param[owner] [LifecycleOwner] that controls observation.
      * @param[onChanged] Lambda expression that is called with an updated state.
      */
-    fun observeState(owner: LifecycleOwner, onChanged: (state: S) -> Unit) = state.observe(owner, Observer { onChanged(it!!) })
+    fun observeState(owner: LifecycleOwner, onChanged: (state: S) -> Unit) = state.observe(owner, Observer(onChanged))
 
     internal fun observeStateForever(onChanged: (state: S) -> Unit) = state.observeForever(onChanged)
+
+    private fun <P> propertyLiveData(value: (state: S) -> P) = Transformations.map(state, value).distinctUntilChanged()
+
+    /**
+     * Used to observe a specific property of this [EiffelViewModel]'s state from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
+     *
+     * @param[P] Type of the observed property.
+     * @param[owner] [LifecycleOwner] that controls observation.
+     * @param[propertyValue] Lambda expression returning the value of the property that should be observed.
+     * @param[onChanged] Lambda expression that is called with an updated property value.
+     */
+    fun <P> observeProperty(owner: LifecycleOwner, propertyValue: (state: S) -> P, onChanged: (value: P) -> Unit) {
+        propertyLiveData(propertyValue).observe(owner, Observer(onChanged))
+    }
+
+    internal fun <P> observePropertyForever(propertyValue: (state: S) -> P, onChanged: (value: P) -> Unit) {
+        propertyLiveData(propertyValue).observeForever(onChanged)
+    }
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
     @CallSuper
