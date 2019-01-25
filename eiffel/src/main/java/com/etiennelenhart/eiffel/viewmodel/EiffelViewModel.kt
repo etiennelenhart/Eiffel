@@ -1,5 +1,6 @@
 package com.etiennelenhart.eiffel.viewmodel
 
+import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
@@ -105,6 +106,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
     internal fun observeStateForever(onChanged: (state: S) -> Unit) = state.observeForever(onChanged)
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
+    @CallSuper
     override fun onCleared() {
         super.onCleared()
         scope.cancel()
