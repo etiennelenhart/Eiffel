@@ -28,6 +28,8 @@ abstract class Adapter<S : State, A : Action> : Interception<S, A> {
 /**
  * Convenience builder function that returns an object extending [Adapter]. Passes provided lambda to overridden function.
  *
+ * @param[S] Type of [State] to receive.
+ * @param[A] Type of supported [Action].
  * @param[adapt] Lambda expression that adapts the given [Action] to a new one.
  * @return An object extending [Adapter].
  */

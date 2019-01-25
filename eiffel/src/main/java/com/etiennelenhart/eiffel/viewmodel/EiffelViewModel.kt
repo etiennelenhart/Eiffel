@@ -1,5 +1,6 @@
 package com.etiennelenhart.eiffel.viewmodel
 
+import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
@@ -25,11 +26,11 @@ import kotlinx.coroutines.channels.consumeEach
  * @param[actionDispatcher] [CoroutineDispatcher] to use for action dispatching, defaults to [Dispatchers.Default]. Mainly used for testing.
  */
 abstract class EiffelViewModel<S : State, A : Action>(
-        initialState: S,
-        private val update: Update<S, A>,
-        private val interceptions: List<Interception<S, A>> = emptyList(),
-        private val interceptionDispatcher: CoroutineDispatcher = Dispatchers.IO,
-        private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
+    initialState: S,
+    private val update: Update<S, A>,
+    private val interceptions: List<Interception<S, A>> = emptyList(),
+    private val interceptionDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
@@ -59,9 +60,9 @@ abstract class EiffelViewModel<S : State, A : Action>(
         }
     }
 
-    private fun applyUpdate(currentState: S, action: A) {
+    private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
-        if (updatedState != currentState) state.postValue(updatedState)
+        if (updatedState != currentState) withContext(Dispatchers.Main) { state.value = updatedState }
     }
 
     /**
@@ -105,6 +106,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
     internal fun observeStateForever(onChanged: (state: S) -> Unit) = state.observeForever(onChanged)
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
+    @CallSuper
     override fun onCleared() {
         super.onCleared()
         scope.cancel()
