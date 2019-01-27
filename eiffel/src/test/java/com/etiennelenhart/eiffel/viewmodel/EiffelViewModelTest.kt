@@ -61,7 +61,7 @@ class EiffelViewModelTest {
             object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
 
         var actual = 0
-        viewModel.observeStateForever { actual = it.count }
+        viewModel.state.observeForever { actual = it.count }
         viewModel.dispatch(TestAction.Increment)
 
         assertEquals(1, actual)
@@ -74,38 +74,12 @@ class EiffelViewModelTest {
             object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
 
         var actual = 0
-        viewModel.observeStateForever { actual = it.count }
+        viewModel.state.observeForever { actual = it.count }
         viewModel.dispatch(TestAction.Increment)
         viewModel.dispatch(TestAction.Increment)
         viewModel.dispatch(TestAction.Decrement)
 
         assertEquals(1, actual)
-    }
-
-    @Test
-    fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' changes observed property THEN 'onChange' is invoked`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
-
-        var actual = 0
-        viewModel.observePropertyForever({ it.count }) { actual = it }
-        viewModel.dispatch(TestAction.Increment)
-
-        assertEquals(1, actual)
-    }
-
-    @Test
-    fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' does not change observed property THEN 'onChange' is not invoked`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
-
-        var actual = 0
-        viewModel.observePropertyForever({ it.count }) { actual = it }
-        viewModel.dispatch(TestAction.Other)
-
-        assertEquals(0, actual)
     }
 
     class OneLiveData : LiveData<Int>() {
@@ -126,7 +100,7 @@ class EiffelViewModelTest {
             }
 
         var actual = 0
-        viewModel.observeStateForever { actual = it.count }
+        viewModel.state.observeForever { actual = it.count }
 
         assertEquals(1, actual)
     }
@@ -144,7 +118,7 @@ class EiffelViewModelTest {
             }
 
         var actual = 0
-        viewModel.observeStateForever { actual = it.count }
+        viewModel.state.observeForever { actual = it.count }
 
         assertEquals(0, actual)
     }
@@ -208,7 +182,7 @@ class EiffelViewModelTest {
         ) {}
 
         var actual = false
-        viewModel.observeStateForever { actual = it.correct }
+        viewModel.state.observeForever { actual = it.correct }
         viewModel.dispatch(InterceptionAction.First)
 
         assertTrue(actual)

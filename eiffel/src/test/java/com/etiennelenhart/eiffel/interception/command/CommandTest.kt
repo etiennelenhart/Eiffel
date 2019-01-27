@@ -22,7 +22,7 @@ class CommandTest {
         val expected = TestAction.Loading
         val command = command<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> consuming(expected) { _, _, _ -> delay(50) }
+                TestAction.Increment -> consuming(expected) { _, _, _ -> delay(20) }
                 else -> ignoring()
             }
         }
@@ -38,7 +38,7 @@ class CommandTest {
         val command = command<TestState, TestAction> {
             when (it) {
                 TestAction.Increment -> consuming(TestAction.Loading) { _, _, dispatch ->
-                    delay(50)
+                    delay(20)
                     dispatch(expected)
                 }
                 else -> ignoring()
@@ -48,7 +48,7 @@ class CommandTest {
         var actual: TestAction? = null
         command(this, TestState, TestAction.Increment, { actual = it }, { _, _, action, _ -> action })
 
-        delay(100)
+        delay(40)
         assertEquals(expected, actual)
     }
 
@@ -57,7 +57,7 @@ class CommandTest {
         val expected = TestAction.Decrement
         val command = command<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> consuming(TestAction.Loading) { _, _, _ -> delay(50) }
+                TestAction.Increment -> consuming(TestAction.Loading) { _, _, _ -> delay(20) }
                 else -> ignoring()
             }
         }

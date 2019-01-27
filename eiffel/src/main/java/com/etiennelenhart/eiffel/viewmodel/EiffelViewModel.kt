@@ -3,13 +3,15 @@ package com.etiennelenhart.eiffel.viewmodel
 import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.ViewModel
 import com.etiennelenhart.eiffel.interception.Interception
 import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
-import com.etiennelenhart.eiffel.util.distinctUntilChanged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
@@ -35,18 +37,24 @@ abstract class EiffelViewModel<S : State, A : Action>(
 ) : ViewModel() {
 
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
-    private val state = MediatorLiveData<S>()
+    private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach {
-            val currentState = state.value!!
+            val currentState = _state.value!!
             val action = applyInterceptions(currentState, it)
             applyUpdate(currentState, action)
         }
     }
 
+    /**
+     * State that may be observed from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
+     */
+    val state: LiveData<S>
+        get() = _state
+
     init {
-        state.value = initialState
+        _state.value = initialState
     }
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
@@ -63,7 +71,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
 
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
-        if (updatedState != currentState) withContext(Dispatchers.Main) { state.value = updatedState }
+        if (updatedState != currentState) withContext(Dispatchers.Main) { _state.value = updatedState }
     }
 
     /**
@@ -79,7 +87,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * @param[source] The [LiveData] to add as a source.
      * @param[action] Lambda expression that should return an [Action] to dispatch when [source] notifies a changed value.
      */
-    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) = state.addSource(source) { dispatch(action(it)) }
+    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) = _state.addSource(source) { dispatch(action(it)) }
 
     /**
      * Removes the given [LiveData] from the private state LiveData by calling [MediatorLiveData.removeSource].
@@ -87,41 +95,13 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * @param[V] Type of the source LiveData's value.
      * @param[source] The [LiveData] to remove.
      */
-    protected fun <V> removeStateSource(source: LiveData<V>) = state.removeSource(source)
+    protected fun <V> removeStateSource(source: LiveData<V>) = _state.removeSource(source)
 
     /**
      * Dispatches the given action by queuing it up for being processed by the state [update].
      */
     fun dispatch(action: A) {
         scope.launch(actionDispatcher) { dispatchActor.send(action) }
-    }
-
-    /**
-     * Used to observe this [EiffelViewModel]'s state from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
-     *
-     * @param[owner] [LifecycleOwner] that controls observation.
-     * @param[onChanged] Lambda expression that is called with an updated state.
-     */
-    fun observeState(owner: LifecycleOwner, onChanged: (state: S) -> Unit) = state.observe(owner, Observer(onChanged))
-
-    internal fun observeStateForever(onChanged: (state: S) -> Unit) = state.observeForever(onChanged)
-
-    private fun <P> propertyLiveData(value: (state: S) -> P) = Transformations.map(state, value).distinctUntilChanged()
-
-    /**
-     * Used to observe a specific property of this [EiffelViewModel]'s state from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
-     *
-     * @param[P] Type of the observed property.
-     * @param[owner] [LifecycleOwner] that controls observation.
-     * @param[propertyValue] Lambda expression returning the value of the property that should be observed.
-     * @param[onChanged] Lambda expression that is called with an updated property value.
-     */
-    fun <P> observeProperty(owner: LifecycleOwner, propertyValue: (state: S) -> P, onChanged: (value: P) -> Unit) {
-        propertyLiveData(propertyValue).observe(owner, Observer(onChanged))
-    }
-
-    internal fun <P> observePropertyForever(propertyValue: (state: S) -> P, onChanged: (value: P) -> Unit) {
-        propertyLiveData(propertyValue).observeForever(onChanged)
     }
 
     @UseExperimental(ExperimentalCoroutinesApi::class)

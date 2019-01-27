@@ -25,7 +25,7 @@ class LiveCommandTest {
         val expected = TestAction.Loading
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(expected) { _, _ -> produce { delay(50) } }
+                TestAction.Increment -> liveConsuming(expected) { _, _ -> produce { delay(20) } }
                 else -> liveIgnoring()
             }
         }
@@ -42,7 +42,7 @@ class LiveCommandTest {
             when (it) {
                 TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
                     produce {
-                        delay(50)
+                        delay(20)
                         send(expected)
                         close()
                     }
@@ -54,7 +54,7 @@ class LiveCommandTest {
         var actual: TestAction? = null
         command(this, TestState, TestAction.Increment, { actual = it }, { _, _, action, _ -> action })
 
-        delay(100)
+        delay(40)
         assertEquals(expected, actual)
     }
 
@@ -65,7 +65,7 @@ class LiveCommandTest {
                 TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
                     produce {
                         send(TestAction.Add(1))
-                        delay(50)
+                        delay(20)
                         send(TestAction.Add(1))
                         close()
                     }
@@ -77,7 +77,7 @@ class LiveCommandTest {
         var actual = 0
         command(this, TestState, TestAction.Increment, { actual++ }, { _, _, action, _ -> action })
 
-        delay(100)
+        delay(40)
         assertEquals(2, actual)
     }
 
@@ -86,7 +86,7 @@ class LiveCommandTest {
         val expected = TestAction.Decrement
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ -> produce { delay(50) } }
+                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ -> produce { delay(20) } }
                 else -> liveIgnoring()
             }
         }
