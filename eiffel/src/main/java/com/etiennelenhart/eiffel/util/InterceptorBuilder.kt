@@ -28,7 +28,7 @@ class InterceptorBuilder<S : State, A : Action> {
     /**
      * Mutable list of added [Interception].
      *
-     * Once the building is done call [toList] to retrieve a immutable version of [interceptions].
+     * Once the building is done call [toList] to retrieve an immutable version of [interceptions].
      */
     private val interceptions = mutableListOf<Interception<S, A>>()
 
@@ -145,7 +145,7 @@ class InterceptorBuilder<S : State, A : Action> {
     fun addPipeAfter(after: suspend (state: S, action: A) -> Unit) = addPipe(after = after)
 
     /**
-     * Add a [Adapter] to [interceptions], passes [adapt] lambda to [adapter].
+     * Add an [Adapter] to [interceptions], passes [adapt] lambda to [adapter].
      *
      * @sample
      * ```
@@ -186,7 +186,7 @@ class InterceptorBuilder<S : State, A : Action> {
     }
 
     /**
-     * Public accessor to get a immutable [List] of the created [Interception].
+     * Public accessor to get an immutable [List] of the created list of [Interception].
      */
     fun toList() = interceptions.toList()
 
@@ -211,9 +211,7 @@ class InterceptorBuilder<S : State, A : Action> {
          *       Timber.tag("SampleViewModel").d("Next action: $action")
          *    }
          *
-         *    /**
-         *    * data class ErrorLoading(val exception: Throwable): SampleAction
-         *    */
+         *    // data class ErrorLoading(val exception: Throwable): SampleAction
          *    addPipeOn<SampleAction.ErrorLoading> { state ->
          *        Timber.tag("SampleViewModel").e(this.exception, "Failed to fetch data, state: $state")
          *    }
