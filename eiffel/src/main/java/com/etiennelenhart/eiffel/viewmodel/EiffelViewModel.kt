@@ -9,13 +9,26 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import com.etiennelenhart.eiffel.interception.Interception
 import com.etiennelenhart.eiffel.interception.Next
+import com.etiennelenhart.eiffel.plugin.dispatchEiffelAction
+import com.etiennelenhart.eiffel.plugin.dispatchEiffelCleared
+import com.etiennelenhart.eiffel.plugin.dispatchEiffelCreated
+import com.etiennelenhart.eiffel.plugin.dispatchEiffelInterception
+import com.etiennelenhart.eiffel.plugin.dispatchEiffelUpdate
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * A [ViewModel] supporting an observable state and dispatching of actions to update this state.
@@ -36,11 +49,15 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
+    open val debug: Boolean = false
+
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach {
+            dispatchEiffelAction(it)
+
             val currentState = _state.value!!
             val action = applyInterceptions(currentState, it)
             applyUpdate(currentState, action)
@@ -55,6 +72,9 @@ abstract class EiffelViewModel<S : State, A : Action>(
 
     init {
         _state.value = initialState
+
+        // Needs to be called AFTER _state.value or else it will throw an error
+        dispatchEiffelCreated()
     }
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
@@ -65,13 +85,20 @@ abstract class EiffelViewModel<S : State, A : Action>(
         return if (index == interceptions.size) {
             { _, _, action, _ -> action }
         } else {
-            { scope, state, action, dispatch -> interceptions[index].invoke(scope, state, action, dispatch, next(index + 1)) }
+            { scope, state, action, dispatch ->
+                val interception = interceptions[index]
+                dispatchEiffelInterception(state, action, interception)
+                interception.invoke(scope, state, action, dispatch, next(index + 1))
+            }
         }
     }
 
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
-        if (updatedState != currentState) withContext(Dispatchers.Main) { _state.value = updatedState }
+        if (updatedState != currentState) {
+            dispatchEiffelUpdate(currentState, updatedState)
+            withContext(Dispatchers.Main) { _state.value = updatedState }
+        }
     }
 
     /**
@@ -109,5 +136,9 @@ abstract class EiffelViewModel<S : State, A : Action>(
     override fun onCleared() {
         super.onCleared()
         scope.cancel()
+        dispatchEiffelCleared()
     }
 }
+
+internal val <S : State, A : Action>EiffelViewModel<S, A>.name: String
+    get() = this::class.java.simpleName
