@@ -56,7 +56,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
     /**
      * Override to pass in a per-ViewModel custom logging solution.  See [EiffelLogger.defaultLogger]
      */
-    open val logger: EiffelLogger.Logger? = null
+    open val loggerImplementation: EiffelLogger.Logger? = null
 
     /**
      * Create an instance of [EiffelLogger] if [isDebugMode] is enabled or [EiffelLogger] has
@@ -64,9 +64,9 @@ abstract class EiffelViewModel<S : State, A : Action>(
      *
      * @see EiffelLogger.enable for enabling globally
      */
-    private val eiffelLogger: EiffelLogger? by lazy {
+    private val logger: EiffelLogger? by lazy {
         if (isDebugMode || EiffelLogger.isEnabled) {
-            EiffelLogger(logger)
+            EiffelLogger(loggerImplementation)
         } else null
     }
 
@@ -75,7 +75,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach {
-            eiffelLogger?.log(tag, "Received Action: $it")
+            logger?.log("$tag:Action", "Received Action: $it")
 
             val currentState = _state.value!!
             val action = applyInterceptions(currentState, it)
@@ -103,7 +103,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
         } else {
             { scope, state, action, dispatch ->
                 val interception = interceptions[index]
-                eiffelLogger?.log(tag, "Apply Interceptor: ${interception::class.java.simpleName}")
+                logger?.log("$tag:Interception", "Apply Interceptor: ${interception::class.java.simpleName}")
                 interception.invoke(scope, state, action, dispatch, next(index + 1))
             }
         }
@@ -112,7 +112,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
         if (updatedState != currentState) {
-            eiffelLogger?.log(tag, "Received state: $updatedState")
+            logger?.log("$tag:Update", "Received state: $updatedState")
             withContext(Dispatchers.Main) { _state.value = updatedState }
         }
     }
