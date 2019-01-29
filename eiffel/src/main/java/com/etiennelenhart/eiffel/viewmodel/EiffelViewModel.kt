@@ -7,15 +7,24 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
+import com.etiennelenhart.eiffel.EiffelLogger
 import com.etiennelenhart.eiffel.interception.Interception
 import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * A [ViewModel] supporting an observable state and dispatching of actions to update this state.
@@ -36,11 +45,38 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
+    private val tag: String = this::class.java.simpleName
+
+    /**
+     * Enable the [EiffelLogger] on a per-ViewModel basis.  See [EiffelLogger.enable] to enable
+     * it globally.
+     */
+    open val isDebugMode: Boolean = false
+
+    /**
+     * Override to pass in a per-ViewModel custom logging solution.  See [EiffelLogger.defaultLogger]
+     */
+    open val logger: EiffelLogger.Logger? = null
+
+    /**
+     * Create an instance of [EiffelLogger] if [isDebugMode] is enabled or [EiffelLogger] has
+     * been enabled globally.
+     *
+     * @see EiffelLogger.enable for enabling globally
+     */
+    private val eiffelLogger: EiffelLogger? by lazy {
+        if (isDebugMode || EiffelLogger.isEnabled) {
+            EiffelLogger(logger)
+        } else null
+    }
+
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach {
+            eiffelLogger?.log(tag, "Received Action: $it")
+
             val currentState = _state.value!!
             val action = applyInterceptions(currentState, it)
             applyUpdate(currentState, action)
@@ -65,13 +101,20 @@ abstract class EiffelViewModel<S : State, A : Action>(
         return if (index == interceptions.size) {
             { _, _, action, _ -> action }
         } else {
-            { scope, state, action, dispatch -> interceptions[index].invoke(scope, state, action, dispatch, next(index + 1)) }
+            { scope, state, action, dispatch ->
+                val interception = interceptions[index]
+                eiffelLogger?.log(tag, "Apply Interceptor: ${interception::class.java.simpleName}")
+                interception.invoke(scope, state, action, dispatch, next(index + 1))
+            }
         }
     }
 
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
-        if (updatedState != currentState) withContext(Dispatchers.Main) { _state.value = updatedState }
+        if (updatedState != currentState) {
+            eiffelLogger?.log(tag, "Received state: $updatedState")
+            withContext(Dispatchers.Main) { _state.value = updatedState }
+        }
     }
 
     /**
