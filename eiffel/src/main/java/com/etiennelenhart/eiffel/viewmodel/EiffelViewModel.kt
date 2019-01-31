@@ -46,7 +46,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
-    open val debug: Boolean = false
+    open val excludeFromDebug: Boolean = false
 
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val _state = MediatorLiveData<S>()
@@ -87,17 +87,18 @@ abstract class EiffelViewModel<S : State, A : Action>(
         { _, _, action, _ -> action }
     } else {
         { scope, state, action, dispatch ->
-            val interception = interceptions[index]
-            interception.invoke(scope, state, action, dispatch, next(index + 1)).apply {
-                log(
-                    """
-                    ->
-                    Applied ${interception::class.java.simpleName}:
-                        State: $state
-                        Action: $action
-                        Result: $this
-                """.trimIndent()
-                )
+            with(interceptions[index]) {
+                invoke(scope, state, action, dispatch, next(index + 1)).also { result ->
+                    log(
+                        """
+                            ->
+                            Applied ${this::class.java.simpleName}:
+                                State: $state
+                                Action: $action
+                                Result: $result
+                        """.trimIndent()
+                    )
+                }
             }
         }
     }
@@ -155,7 +156,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
 }
 
 internal fun <S : State, A : Action> EiffelViewModel<S, A>.log(message: String) {
-    if (Eiffel.debugConfig.enabled && debug) {
+    if (Eiffel.debugConfig.enabled && !excludeFromDebug) {
         Eiffel.debugConfig.logger.log(Log.DEBUG, this::class.java.simpleName, message)
     }
 }

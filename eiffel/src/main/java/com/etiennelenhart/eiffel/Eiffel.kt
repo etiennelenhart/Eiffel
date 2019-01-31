@@ -4,16 +4,19 @@ import com.etiennelenhart.eiffel.logger.Logger
 
 object Eiffel {
 
-    /**
-     * Debug configuration.
-     *
-     * Defaults to [DebugConfig.Default], but can be overridden by calling [debugMode].
-     */
     internal var debugConfig: DebugConfig = DebugConfig.Default
         private set
 
     /**
      * Enable or disable Eiffel's debug mode.
+     *
+     * You can override the [Logger.Default] by passing in your own implementation of [Logger].
+     * @sample
+     * ```
+     * Eiffel.debugMode(true, logger { priority, tag, message ->
+     *     Timber.tag(tag).log(priority, message)
+     * })
+     * ```
      *
      * @param[enabled] Globally enable the debug mode for the whole app.
      * @param[logger] [Logger] implementation to use.
