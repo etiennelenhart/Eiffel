@@ -18,6 +18,7 @@ interface Logger {
  * Convenience function to build an instance of [Logger].
  *
  * @param[logger] Lambda for logging.
+@return Object implementing [Logger].
  */
 inline fun log(crossinline logger: (priority: Int, tag: String, message: String) -> Unit): Logger {
     return object : Logger {

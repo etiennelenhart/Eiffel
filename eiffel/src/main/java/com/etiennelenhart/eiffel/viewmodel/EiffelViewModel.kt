@@ -76,7 +76,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
 
     init {
         _state.value = initialState
-        log("Creating EiffelViewModel with an initial state of $initialState")
+        log("Creating ${this::class.java.simpleName} with an initial state of $initialState")
     }
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {

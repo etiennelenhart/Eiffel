@@ -16,12 +16,12 @@ object Eiffel {
      * Enable or disable Eiffel's debug mode.
      *
      * @param[enabled] Globally enable the debug mode for the whole app.
-     * @param[logger] Logger implementation to use.
+     * @param[logger] [Logger] implementation to use.
      */
     fun debugMode(enabled: Boolean, logger: Logger = Logger.Default) {
         debugConfig = object : DebugConfig {
-            override val enabled: Boolean = enabled
-            override val logger: Logger = logger
+            override val enabled = enabled
+            override val logger = logger
         }
     }
 }
