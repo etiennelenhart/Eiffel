@@ -38,7 +38,7 @@ class CommandTest {
         val command = command<TestState, TestAction> {
             when (it) {
                 TestAction.Increment -> consuming(TestAction.Loading) { _, _, dispatch ->
-                    delay(20)
+                    delay(40)
                     dispatch(expected)
                 }
                 else -> ignoring()
@@ -48,7 +48,7 @@ class CommandTest {
         var actual: TestAction? = null
         command(this, TestState, TestAction.Increment, { actual = it }, { _, _, action, _ -> action })
 
-        delay(40)
+        delay(80)
         assertEquals(expected, actual)
     }
 
