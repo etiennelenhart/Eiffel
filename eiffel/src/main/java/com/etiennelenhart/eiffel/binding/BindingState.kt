@@ -11,6 +11,7 @@ import com.etiennelenhart.eiffel.state.State
  *
  * @param[T] Type of state to adapt.
  */
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel and BindableState.")
 interface BindingState<in T : State> {
 
     /**
