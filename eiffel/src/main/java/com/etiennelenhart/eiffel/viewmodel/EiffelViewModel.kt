@@ -30,6 +30,10 @@ import kotlinx.coroutines.withContext
 /**
  * A [ViewModel] supporting an observable state and dispatching of actions to update this state.
  *
+ * By default if [Eiffel.debugMode] is enabled then every instance of [EiffelViewModel] will have
+ * its [Update], [Interception] and [Action]'s logged.  To exclude a specific [EiffelViewModel] from
+ * this functionality override [excludeFromDebug] and set it to `true`.
+ *
  * @param[S] Type of associated [State].
  * @param[A] Type of supported [Action]s.
  * @param[initialState] Initial state to set when view model is created.
@@ -46,7 +50,17 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : ViewModel() {
 
-    open val excludeFromDebug: Boolean = false
+    /**
+     * Set to `true` to exclude this ViewModel from [Eiffel.debugMode].
+     *
+     * ```
+     * // Disable debug mode for a specific ViewModel
+     * class MyViewModel : EiffelViewModel(...) {
+     *    override val excludeFromDebug: Boolean = true
+     * }
+     * ```
+     */
+    protected open val excludeFromDebug: Boolean = false
 
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val _state = MediatorLiveData<S>()
@@ -130,7 +144,8 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * @param[source] The [LiveData] to add as a source.
      * @param[action] Lambda expression that should return an [Action] to dispatch when [source] notifies a changed value.
      */
-    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) = _state.addSource(source) { dispatch(action(it)) }
+    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) =
+        _state.addSource(source) { dispatch(action(it)) }
 
     /**
      * Removes the given [LiveData] from the private state LiveData by calling [MediatorLiveData.removeSource].
@@ -153,10 +168,10 @@ abstract class EiffelViewModel<S : State, A : Action>(
         super.onCleared()
         scope.cancel()
     }
-}
 
-internal fun <S : State, A : Action> EiffelViewModel<S, A>.log(message: String) {
-    if (Eiffel.debugConfig.enabled && !excludeFromDebug) {
-        Eiffel.debugConfig.logger.log(Log.DEBUG, this::class.java.simpleName, message)
+    private fun log(message: String) {
+        if (Eiffel.debugConfig.enabled && !excludeFromDebug) {
+            Eiffel.debugConfig.logger.log(Log.DEBUG, this::class.java.simpleName, message)
+        }
     }
 }

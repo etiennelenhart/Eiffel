@@ -9,7 +9,7 @@ import com.etiennelenhart.eiffel.logger.Logger.Default
  * As an example you could create a [Logger] object that uses Timber or some other
  * custom logging library.
  *
- * @sample
+ * Example:
  * ```
  * object: Logger {
  *   override fun log(priority: Int, tag: String, message: String) {
@@ -43,7 +43,7 @@ interface Logger {
 /**
  * Convenience function to build an instance of [Logger].
  *
- * @sample
+ * Example:
  * ```
  * // Log all messages using Timber with a 'info' priority.
  * logger { _, tag, message ->
