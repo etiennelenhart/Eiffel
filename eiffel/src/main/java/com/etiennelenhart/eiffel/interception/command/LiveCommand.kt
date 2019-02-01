@@ -41,7 +41,7 @@ abstract class LiveCommand<S : State, A : Action> : Interception<S, A> {
     protected abstract fun react(action: A): LiveReaction<S, A>
 
     @UseExperimental(ObsoleteCoroutinesApi::class)
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A {
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A? {
         return when (val reaction = react(action)) {
             is LiveReaction.Consuming -> {
                 scope.launch {

@@ -66,19 +66,19 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
-        channel.consumeEach {
+        channel.consumeEach { action ->
             val currentState = _state.value!!
             log(
                 """
                 ->
                 Processing Action:
                     State: $currentState
-                    Action: $it
+                    Action: $action
             """.trimIndent()
             )
 
-            val action = applyInterceptions(currentState, it)
-            applyUpdate(currentState, action)
+            val resultingAction = applyInterceptions(currentState, action)
+            resultingAction?.let { applyUpdate(currentState, it) }
         }
     }
 
@@ -144,8 +144,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * @param[source] The [LiveData] to add as a source.
      * @param[action] Lambda expression that should return an [Action] to dispatch when [source] notifies a changed value.
      */
-    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) =
-        _state.addSource(source) { dispatch(action(it)) }
+    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) = _state.addSource(source) { dispatch(action(it)) }
 
     /**
      * Removes the given [LiveData] from the private state LiveData by calling [MediatorLiveData.removeSource].

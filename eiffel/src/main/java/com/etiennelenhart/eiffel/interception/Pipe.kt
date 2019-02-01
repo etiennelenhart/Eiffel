@@ -14,15 +14,16 @@ import kotlinx.coroutines.CoroutineScope
 abstract class Pipe<S : State, A : Action> : Interception<S, A> {
 
     /**
-     * Lambda expression called with the current [State] and received [Action].
+     * Called with the current [State] and received [Action].
      */
-    protected abstract val before: suspend (state: S, action: A) -> Unit
-    /**
-     * Lambda expression called with the current [State] and updated [Action] from next item.
-     */
-    protected abstract val after: suspend (state: S, action: A) -> Unit
+    protected abstract fun before(state: S, action: A)
 
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A {
+    /**
+     * Called with the current [State] and updated [Action] from next items. Might be 'null' if blocked by a following [Filter].
+     */
+    protected abstract fun after(state: S, action: A?)
+
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A? {
         before(state, action)
         val newAction = next(scope, state, action, dispatch)
         after(state, newAction)
@@ -31,20 +32,21 @@ abstract class Pipe<S : State, A : Action> : Interception<S, A> {
 }
 
 /**
- * Convenience builder function that returns an object extending [Pipe]. Passes provided lambdas to overridden properties.
+ * Convenience builder function that returns an object extending [Pipe]. Passes provided lambdas to overridden functions.
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
  * @param[before] Lambda expression called with the current [State] and received [Action].
- * @param[after] Lambda expression called with the current [State] and updated [Action] from next item.
+ * @param[after] Lambda expression called with the current [State] and updated [Action] from next item. Might be 'null' if blocked by a following [Filter].
  * @return An object extending [Pipe].
  */
 fun <S : State, A : Action> pipe(
-    before: suspend (state: S, action: A) -> Unit = { _, _ -> },
-    after: suspend (state: S, action: A) -> Unit = { _, _ -> }
+    before: (state: S, action: A) -> Unit = { _, _ -> },
+    after: (state: S, action: A?) -> Unit = { _, _ -> }
 ): Pipe<S, A> {
     return object : Pipe<S, A>() {
-        override val before = before
-        override val after = after
+        override fun before(state: S, action: A) = before(state, action)
+
+        override fun after(state: S, action: A?) = after(state, action)
     }
 }

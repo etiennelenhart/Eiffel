@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param[State] Type of [State] to receive.
  * @param[Action] Type of supported [Action].
  */
-typealias Next<State, Action> = suspend (scope: CoroutineScope, state: State, action: Action, dispatch: (Action) -> Unit) -> Action
+typealias Next<State, Action> = suspend (scope: CoroutineScope, state: State, action: Action, dispatch: (Action) -> Unit) -> Action?
 
 /**
  * May be used as an item in the [EiffelViewModel.interceptions] chain to intercept dispatching of an [Action].
@@ -27,7 +27,7 @@ interface Interception<S : State, A : Action> {
      *  * Ignore it and pass it to the next chain item by forwarding it to [next].
      *  * Do some unrelated work, like logging and forward it to [next]. (see [Pipe])
      *  * Adapt it and pass it to the next chain item by forwarding the updated [Action] to [next]. (see [Adapter])
-     *  * Block it from passing through the chain by simply returning the received [Action] and not calling [next]. (see [Filter])
+     *  * Block it from reaching [EiffelViewModel.update] by returning `null` and not calling [next]. (see [Filter])
      *  * Consume it by returning a new [Action] and not calling [next].
      * It is also possible to asynchronously call [dispatch] at any time which will dispatch the provided [Action] using [EiffelViewModel.dispatch],
      * effectively invoking the [EiffelViewModel.interceptions] chain again.
@@ -63,5 +63,5 @@ interface Interception<S : State, A : Action> {
      * @param[next] Represents the next item in the chain.
      * @return The [Action] to pass back to the original [EiffelViewModel.dispatch] operation.
      */
-    suspend operator fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A
+    suspend operator fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A?
 }

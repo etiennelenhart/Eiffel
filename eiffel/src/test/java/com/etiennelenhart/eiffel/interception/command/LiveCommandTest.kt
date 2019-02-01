@@ -42,7 +42,7 @@ class LiveCommandTest {
             when (it) {
                 TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
                     produce {
-                        delay(20)
+                        delay(40)
                         send(expected)
                         close()
                     }
@@ -54,7 +54,7 @@ class LiveCommandTest {
         var actual: TestAction? = null
         command(this, TestState, TestAction.Increment, { actual = it }, { _, _, action, _ -> action })
 
-        delay(40)
+        delay(80)
         assertEquals(expected, actual)
     }
 
@@ -65,7 +65,7 @@ class LiveCommandTest {
                 TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
                     produce {
                         send(TestAction.Add(1))
-                        delay(20)
+                        delay(40)
                         send(TestAction.Add(1))
                         close()
                     }
@@ -77,7 +77,7 @@ class LiveCommandTest {
         var actual = 0
         command(this, TestState, TestAction.Increment, { actual++ }, { _, _, action, _ -> action })
 
-        delay(40)
+        delay(80)
         assertEquals(2, actual)
     }
 
@@ -86,13 +86,14 @@ class LiveCommandTest {
         val expected = TestAction.Decrement
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ -> produce { delay(20) } }
+                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ -> produce { delay(40) } }
                 else -> liveIgnoring()
             }
         }
 
         val actual = command(this, TestState, expected, { }, { _, _, action, _ -> action })
 
+        delay(80)
         assertEquals(expected, actual)
     }
 }

@@ -26,8 +26,8 @@ class FilterTest {
     }
 
     @Test
-    fun `GIVEN Filter with blocking 'predicate' WHEN invoked with 'action' THEN 'action' is blocked`() = runBlocking {
-        val expected = TestAction.Block
+    fun `GIVEN Filter with blocking 'predicate' WHEN invoked with 'action' THEN 'action' is blocked and 'null' is returned`() = runBlocking {
+        val expected = null
         val filter = filter<TestState, TestAction> { _, action -> action is TestAction.Allow }
 
         val actual = filter(this, TestState, TestAction.Block, {}, { _, _, _, _ -> TestAction.Next })

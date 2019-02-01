@@ -20,7 +20,7 @@ abstract class Adapter<S : State, A : Action> : Interception<S, A> {
      */
     protected abstract fun adapt(action: A): A
 
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A {
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A? {
         return next(scope, state, adapt(action), dispatch)
     }
 }
