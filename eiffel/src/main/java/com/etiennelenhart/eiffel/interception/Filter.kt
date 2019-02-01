@@ -19,8 +19,8 @@ abstract class Filter<S : State, A : Action> : Interception<S, A> {
      */
     protected abstract val predicate: suspend (state: S, action: A) -> Boolean
 
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A {
-        return if (predicate(state, action)) next(scope, state, action, dispatch) else action
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A? {
+        return if (predicate(state, action)) next(scope, state, action, dispatch) else null
     }
 }
 

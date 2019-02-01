@@ -18,11 +18,11 @@ abstract class Pipe<S : State, A : Action> : Interception<S, A> {
      */
     protected abstract val before: suspend (state: S, action: A) -> Unit
     /**
-     * Lambda expression called with the current [State] and updated [Action] from next item.
+     * Lambda expression called with the current [State] and updated [Action] from next items. Might be 'null' if blocked by a following [Filter].
      */
-    protected abstract val after: suspend (state: S, action: A) -> Unit
+    protected abstract val after: suspend (state: S, action: A?) -> Unit
 
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A {
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A? {
         before(state, action)
         val newAction = next(scope, state, action, dispatch)
         after(state, newAction)
@@ -36,12 +36,12 @@ abstract class Pipe<S : State, A : Action> : Interception<S, A> {
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
  * @param[before] Lambda expression called with the current [State] and received [Action].
- * @param[after] Lambda expression called with the current [State] and updated [Action] from next item.
+ * @param[after] Lambda expression called with the current [State] and updated [Action] from next item. Might be 'null' if blocked by a following [Filter].
  * @return An object extending [Pipe].
  */
 fun <S : State, A : Action> pipe(
     before: suspend (state: S, action: A) -> Unit = { _, _ -> },
-    after: suspend (state: S, action: A) -> Unit = { _, _ -> }
+    after: suspend (state: S, action: A?) -> Unit = { _, _ -> }
 ): Pipe<S, A> {
     return object : Pipe<S, A>() {
         override val before = before
