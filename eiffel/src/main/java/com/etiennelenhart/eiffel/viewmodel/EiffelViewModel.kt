@@ -68,17 +68,25 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach { action ->
             val currentState = _state.value!!
+
             log(
                 """
-                ->
-                Processing Action:
-                    State: $currentState
-                    Action: $action
-            """.trimIndent()
+                ┌───── ↘ Processing: $action
+                ├─ ↓ Current state: $currentState
+                """.trimIndent()
             )
 
             val resultingAction = applyInterceptions(currentState, action)
+
+            when {
+                interceptions.isEmpty() -> Unit
+                resultingAction == null -> log("├─   ⇷ Blocked")
+                else -> log("├─   ← Result:       $resultingAction")
+            }
+
             resultingAction?.let { applyUpdate(currentState, it) }
+
+            log("└──────────────────────────────────────────")
         }
     }
 
@@ -90,10 +98,11 @@ abstract class EiffelViewModel<S : State, A : Action>(
 
     init {
         _state.value = initialState
-        log("Creating ${this::class.java.simpleName} with an initial state of $initialState")
+        log("* Creating ${this::class.java.simpleName}, initial state: $initialState")
     }
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
+        if (interceptions.isEmpty()) log("├─ ↡ No interceptions to apply")
         next(0).invoke(scope, currentState, action, ::dispatch)
     }
 
@@ -101,18 +110,15 @@ abstract class EiffelViewModel<S : State, A : Action>(
         { _, _, action, _ -> action }
     } else {
         { scope, state, action, dispatch ->
-            with(interceptions[index]) {
-                invoke(scope, state, action, dispatch, next(index + 1)).also { result ->
-                    log(
-                        """
-                            ->
-                            Applied ${this::class.java.simpleName}:
-                                State: $state
-                                Action: $action
-                                Result: $result
-                        """.trimIndent()
-                    )
-                }
+            interceptions[index].run {
+                if (index > 0) log("├─   ← Forwarded:    $action")
+                log(
+                    """
+                    ├─ ↓ Interception:  ${this::class.java.simpleName}
+                    ├─   → Received:     $action
+                    """.trimIndent()
+                )
+                invoke(scope, state, action, dispatch, next(index + 1))
             }
         }
     }
@@ -120,14 +126,10 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
         if (updatedState != currentState) {
-            log(
-                """
-                State Update:
-                    Previous: $currentState
-                    Updated: $updatedState
-            """.trimIndent()
-            )
+            log("├─ ↙ Updated state: $updatedState")
             withContext(Dispatchers.Main) { _state.value = updatedState }
+        } else {
+            log("├─ ↪ State unchanged, not emitted")
         }
     }
 
@@ -144,7 +146,8 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * @param[source] The [LiveData] to add as a source.
      * @param[action] Lambda expression that should return an [Action] to dispatch when [source] notifies a changed value.
      */
-    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) = _state.addSource(source) { dispatch(action(it)) }
+    protected fun <V> addStateSource(source: LiveData<V>, action: (value: V) -> A) =
+        _state.addSource(source) { dispatch(action(it)) }
 
     /**
      * Removes the given [LiveData] from the private state LiveData by calling [MediatorLiveData.removeSource].
@@ -158,13 +161,17 @@ abstract class EiffelViewModel<S : State, A : Action>(
      * Dispatches the given action by queuing it up for being processed by the state [update].
      */
     fun dispatch(action: A) {
-        scope.launch(actionDispatcher) { dispatchActor.send(action) }
+        scope.launch(actionDispatcher) {
+            log("↗ Dispatching: $action")
+            dispatchActor.send(action)
+        }
     }
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
     @CallSuper
     override fun onCleared() {
         super.onCleared()
+        log("✝ Destroying ${this::class.java.simpleName}, canceling command scope")
         scope.cancel()
     }
 
