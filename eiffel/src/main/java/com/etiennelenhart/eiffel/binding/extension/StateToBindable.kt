@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.etiennelenhart.eiffel.binding.BindableMapping
 import com.etiennelenhart.eiffel.binding.BindableState
-import com.etiennelenhart.eiffel.binding.BindingState
 import com.etiennelenhart.eiffel.state.State
 
 /**

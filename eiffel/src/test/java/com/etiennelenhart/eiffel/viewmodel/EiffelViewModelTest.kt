@@ -17,10 +17,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @ObsoleteCoroutinesApi
 @UseExperimental(ExperimentalCoroutinesApi::class)
@@ -145,7 +142,7 @@ class EiffelViewModelTest {
             action: InterceptionAction,
             dispatch: (action: InterceptionAction) -> Unit,
             next: Next<InterceptionState, InterceptionAction>
-        ): InterceptionAction {
+        ): InterceptionAction? {
             return if (action is InterceptionAction.First) {
                 next(scope, state, InterceptionAction.Second, dispatch)
             } else {
@@ -161,7 +158,7 @@ class EiffelViewModelTest {
             action: InterceptionAction,
             dispatch: (action: InterceptionAction) -> Unit,
             next: Next<InterceptionState, InterceptionAction>
-        ): InterceptionAction {
+        ): InterceptionAction? {
             return if (action is InterceptionAction.Second) {
                 next(scope, state, InterceptionAction.Third, dispatch)
             } else {
@@ -186,5 +183,35 @@ class EiffelViewModelTest {
         viewModel.dispatch(InterceptionAction.First)
 
         assertTrue(actual)
+    }
+
+    val blockingInterception = object : Interception<InterceptionState, InterceptionAction> {
+        override suspend fun invoke(
+            scope: CoroutineScope,
+            state: InterceptionState,
+            action: InterceptionAction,
+            dispatch: (action: InterceptionAction) -> Unit,
+            next: Next<InterceptionState, InterceptionAction>
+        ): InterceptionAction? {
+            return null
+        }
+    }
+
+    @Test
+    fun `GIVEN EiffelViewModel subclass with blocking interception WHEN 'dispatch' called THEN state is not updated`() {
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(
+            InterceptionState(),
+            InterceptionStateUpdate,
+            listOf(blockingInterception, firstInterception, secondInterception),
+            Dispatchers.Unconfined,
+            Dispatchers.Unconfined
+        ) {}
+
+        var actual = false
+        viewModel.state.observeForever { actual = it.correct }
+        viewModel.dispatch(InterceptionAction.First)
+
+        assertFalse(actual)
     }
 }

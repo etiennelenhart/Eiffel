@@ -40,10 +40,10 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
-        channel.consumeEach {
+        channel.consumeEach { action ->
             val currentState = _state.value!!
-            val action = applyInterceptions(currentState, it)
-            applyUpdate(currentState, action)
+            val resultingAction = applyInterceptions(currentState, action)
+            resultingAction?.let { applyUpdate(currentState, it) }
         }
     }
 
