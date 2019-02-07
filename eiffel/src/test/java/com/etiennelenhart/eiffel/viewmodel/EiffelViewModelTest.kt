@@ -44,13 +44,12 @@ class EiffelViewModelTest {
         object Other : TestAction()
     }
 
-    val testStateUpdate = update<TestState, TestAction> { state, action ->
-        val count = state.count
+    val testStateUpdate = update<TestState, TestAction> { action ->
         when (action) {
-            TestAction.Increment -> state.copy(count = count + 1)
-            TestAction.Decrement -> state.copy(count = count - 1)
-            is TestAction.Add -> state.copy(count = count + action.amount)
-            TestAction.Other -> state.copy(other = "changed")
+            TestAction.Increment -> copy(count = count + 1)
+            TestAction.Decrement -> copy(count = count - 1)
+            is TestAction.Add -> copy(count = count + action.amount)
+            TestAction.Other -> copy(other = "changed")
         }
     }
 
@@ -58,7 +57,13 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called THEN 'action' is processed`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
+            object : EiffelViewModel<TestState, TestAction>(
+                TestState(),
+                testStateUpdate,
+                emptyList(),
+                Dispatchers.Unconfined,
+                Dispatchers.Unconfined
+            ) {}
 
         var actual = 0
         viewModel.state.observeForever { actual = it.count }
@@ -71,7 +76,13 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called multiple times THEN all 'actions' are processed`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
+            object : EiffelViewModel<TestState, TestAction>(
+                TestState(),
+                testStateUpdate,
+                emptyList(),
+                Dispatchers.Unconfined,
+                Dispatchers.Unconfined
+            ) {}
 
         var actual = 0
         viewModel.state.observeForever { actual = it.count }
@@ -93,7 +104,13 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass with a source 'LiveData' WHEN 'observeStateForever' called THEN updated state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {
+            object : EiffelViewModel<TestState, TestAction>(
+                TestState(),
+                testStateUpdate,
+                emptyList(),
+                Dispatchers.Unconfined,
+                Dispatchers.Unconfined
+            ) {
                 init {
                     addStateSource(OneLiveData()) { TestAction.Add(it) }
                 }
@@ -109,7 +126,13 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass with a removed source 'LiveData' WHEN 'observeStateForever' called THEN initial state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {
+            object : EiffelViewModel<TestState, TestAction>(
+                TestState(),
+                testStateUpdate,
+                emptyList(),
+                Dispatchers.Unconfined,
+                Dispatchers.Unconfined
+            ) {
                 init {
                     val source = OneLiveData()
                     addStateSource(source) { TestAction.Add(it) }
@@ -131,10 +154,11 @@ class EiffelViewModelTest {
         object Third : InterceptionAction()
     }
 
-    object InterceptionStateUpdate : Update<InterceptionState, InterceptionAction> {
-        override fun invoke(state: InterceptionState, action: InterceptionAction) = when (action) {
-            InterceptionAction.Third -> state.copy(correct = true)
-            else -> state
+    object InterceptionStateUpdate : Update<InterceptionState, InterceptionAction>() {
+
+        override fun InterceptionState.perform(action: InterceptionAction) = when (action) {
+            InterceptionAction.Third -> copy(correct = true)
+            else -> this
         }
     }
 
