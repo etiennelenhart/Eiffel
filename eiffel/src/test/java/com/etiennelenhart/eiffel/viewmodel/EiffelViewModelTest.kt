@@ -173,7 +173,13 @@ class EiffelViewModelTest {
     @Test
     fun `GIVEN EiffelViewModel subclass with interceptions WHEN 'dispatch' called THEN all interceptions are applied`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState(), InterceptionStateUpdate, listOf(firstInterception, secondInterception), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
+        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(
+            InterceptionState(),
+            InterceptionStateUpdate,
+            listOf(firstInterception, secondInterception),
+            Dispatchers.Unconfined,
+            Dispatchers.Unconfined
+        ) {}
 
         var actual = false
         viewModel.state.observeForever { actual = it.correct }
