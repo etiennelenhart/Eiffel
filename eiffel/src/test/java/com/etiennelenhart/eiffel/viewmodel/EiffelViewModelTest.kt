@@ -41,13 +41,12 @@ class EiffelViewModelTest {
         object Other : TestAction()
     }
 
-    val testStateUpdate = update<TestState, TestAction> { state, action ->
-        val count = state.count
+    val testStateUpdate = update<TestState, TestAction> { action ->
         when (action) {
-            TestAction.Increment -> state.copy(count = count + 1)
-            TestAction.Decrement -> state.copy(count = count - 1)
-            is TestAction.Add -> state.copy(count = count + action.amount)
-            TestAction.Other -> state.copy(other = "changed")
+            TestAction.Increment -> copy(count = count + 1)
+            TestAction.Decrement -> copy(count = count - 1)
+            is TestAction.Add -> copy(count = count + action.amount)
+            TestAction.Other -> copy(other = "changed")
         }
     }
 
@@ -128,10 +127,11 @@ class EiffelViewModelTest {
         object Third : InterceptionAction()
     }
 
-    object InterceptionStateUpdate : Update<InterceptionState, InterceptionAction> {
-        override fun invoke(state: InterceptionState, action: InterceptionAction) = when (action) {
-            InterceptionAction.Third -> state.copy(correct = true)
-            else -> state
+    object InterceptionStateUpdate : Update<InterceptionState, InterceptionAction>() {
+
+        override fun InterceptionState.perform(action: InterceptionAction) = when (action) {
+            InterceptionAction.Third -> copy(correct = true)
+            else -> this
         }
     }
 
