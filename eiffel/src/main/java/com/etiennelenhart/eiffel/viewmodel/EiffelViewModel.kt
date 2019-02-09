@@ -69,12 +69,8 @@ abstract class EiffelViewModel<S : State, A : Action>(
         channel.consumeEach { action ->
             val currentState = _state.value!!
 
-            log(
-                """
-                ┌───── ↘ Processing: $action
-                ├─ ↓ Current state: $currentState
-                """.trimIndent()
-            )
+            log("┌───── ↘ Processing: $action")
+            log("├─ ↓ Current state: $currentState")
 
             val resultingAction = applyInterceptions(currentState, action)
 
@@ -112,12 +108,8 @@ abstract class EiffelViewModel<S : State, A : Action>(
         { scope, state, action, dispatch ->
             interceptions[index].run {
                 if (index > 0) log("├─   ← Forwarded:    $action")
-                log(
-                    """
-                    ├─ ↓ Interception:  ${this::class.java.simpleName}
-                    ├─   → Received:     $action
-                    """.trimIndent()
-                )
+                log("├─ ↓ Interception:  ${this::class.java.simpleName}")
+                log("├─   → Received:     $action")
                 invoke(scope, state, action, dispatch, next(index + 1))
             }
         }
