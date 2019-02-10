@@ -61,13 +61,19 @@ abstract class LiveCommand<S : State, A : Action> : Interception<S, A> {
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
+ * @param[debugName] Custom name to use when logging the [LiveCommand] in debug mode.
  * @param[react] Lambda expression called with the received [Action]. Return either [LiveReaction.Consuming] or [LiveReaction.Ignoring].
  * (see [LiveCommand.react])
  * @return An object extending [LiveCommand].
 */
  */
-fun <S : State, A : Action> liveCommand(react: (action: A) -> LiveReaction<S, A>): LiveCommand<S, A> {
+fun <S : State, A : Action> liveCommand(
+    debugName: String = "",
+    react: (action: A) -> LiveReaction<S, A>
+): LiveCommand<S, A> {
     return object : LiveCommand<S, A>() {
+        override val debugName: String = debugName.ifEmpty { toString() }
+
         override fun react(action: A) = react(action)
     }
 }

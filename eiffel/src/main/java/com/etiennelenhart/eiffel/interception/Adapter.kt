@@ -30,11 +30,17 @@ abstract class Adapter<S : State, A : Action> : Interception<S, A> {
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
+ * @param[debugName] Custom name to use when logging the [Adapter] in debug mode.
  * @param[adapt] Lambda expression that adapts the given [Action] to a new one.
  * @return An object extending [Adapter].
  */
-fun <S : State, A : Action> adapter(adapt: (action: A) -> A): Adapter<S, A> {
+fun <S : State, A : Action> adapter(
+    debugName: String = "",
+    adapt: (action: A) -> A
+): Adapter<S, A> {
     return object : Adapter<S, A>() {
+        override val debugName: String = debugName.ifEmpty { toString() }
+
         override fun adapt(action: A) = adapt(action)
     }
 }
