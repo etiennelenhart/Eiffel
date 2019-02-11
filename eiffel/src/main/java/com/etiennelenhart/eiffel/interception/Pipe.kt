@@ -36,15 +36,19 @@ abstract class Pipe<S : State, A : Action> : Interception<S, A> {
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
+ * @param[debugName] Custom name to use when logging the [Pipe] in debug mode.
  * @param[before] Lambda expression called with the current [State] and received [Action].
  * @param[after] Lambda expression called with the current [State] and updated [Action] from next item. Might be 'null' if blocked by a following [Filter].
  * @return An object extending [Pipe].
  */
 fun <S : State, A : Action> pipe(
+    debugName: String = "",
     before: (state: S, action: A) -> Unit = { _, _ -> },
     after: (state: S, action: A?) -> Unit = { _, _ -> }
 ): Pipe<S, A> {
     return object : Pipe<S, A>() {
+        override val debugName: String = debugName.ifEmpty { toString() }
+
         override fun before(state: S, action: A) = before(state, action)
 
         override fun after(state: S, action: A?) = after(state, action)

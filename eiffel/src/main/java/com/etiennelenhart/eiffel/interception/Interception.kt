@@ -22,6 +22,14 @@ typealias Next<State, Action> = suspend (scope: CoroutineScope, state: State, ac
 interface Interception<S : State, A : Action> {
 
     /**
+     * Custom name to use when logging the [Interception].
+     *
+     * @see EiffelViewModel.next
+     */
+    val debugName: String
+        get() = toString()
+
+    /**
      * When an [Action] is dispatched using [EiffelViewModel.dispatch], the first item in the [EiffelViewModel.interceptions] chain is invoked.
      * It is then up to the [Interception] to decide how to react to the [Action]:
      *  * Ignore it and pass it to the next chain item by forwarding it to [next].

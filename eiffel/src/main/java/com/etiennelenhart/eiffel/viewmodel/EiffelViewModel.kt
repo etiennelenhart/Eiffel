@@ -108,7 +108,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
         { scope, state, action, dispatch ->
             interceptions[index].run {
                 if (index > 0) log("├─   ← Forwarded:    $action")
-                log("├─ ↓ Interception:  ${this::class.java.simpleName}")
+                log("├─ ↓ Interception:  $debugName")
                 log("├─   → Received:     $action")
                 invoke(scope, state, action, dispatch, next(index + 1))
             }

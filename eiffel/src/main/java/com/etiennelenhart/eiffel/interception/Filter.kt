@@ -31,12 +31,18 @@ abstract class Filter<S : State, A : Action> : Interception<S, A> {
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
+ * @param[debugName] Custom name to use when logging the [Filter] in debug mode.
  * @param[predicate] Lambda expression called with the current [State] and received [Action]. Return `true` if received [Action] should be forwarded,
  * `false` otherwise.
  * @return An object extending [Filter].
  */
-fun <S : State, A : Action> filter(predicate: (state: S, action: A) -> Boolean): Filter<S, A> {
+fun <S : State, A : Action> filter(
+    debugName: String = "",
+    predicate: (state: S, action: A) -> Boolean
+): Filter<S, A> {
     return object : Filter<S, A>() {
+        override val debugName: String = debugName.ifEmpty { toString() }
+
         override fun predicate(state: S, action: A) = predicate(state, action)
     }
 }
