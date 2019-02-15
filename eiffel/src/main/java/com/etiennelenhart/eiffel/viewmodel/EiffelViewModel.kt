@@ -14,18 +14,10 @@ import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.state.Update
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * A [ViewModel] supporting an observable state and dispatching of actions to update this state.
@@ -69,20 +61,20 @@ abstract class EiffelViewModel<S : State, A : Action>(
         channel.consumeEach { action ->
             val currentState = _state.value!!
 
-            log("┌───── ↘ Processing: $action")
-            log("├─ ↓ Current state: $currentState")
+            log { "┌───── ↘ Processing: $action" }
+            log { "├─ ↓ Current state: $currentState" }
 
             val resultingAction = applyInterceptions(currentState, action)
 
             when {
                 interceptions.isEmpty() -> Unit
-                resultingAction == null -> log("├─   ⇷ Blocked")
-                else -> log("├─   ← Result:       $resultingAction")
+                resultingAction == null -> log { "├─   ⇷ Blocked" }
+                else -> log { "├─   ← Result:       $resultingAction" }
             }
 
             resultingAction?.let { applyUpdate(currentState, it) }
 
-            log("└──────────────────────────────────────────")
+            log { "└──────────────────────────────────────────" }
         }
     }
 
@@ -94,11 +86,11 @@ abstract class EiffelViewModel<S : State, A : Action>(
 
     init {
         _state.value = initialState
-        log("* Creating ${this::class.java.simpleName}, initial state: $initialState")
+        log { "* Creating ${this::class.java.simpleName}, initial state: $initialState" }
     }
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
-        if (interceptions.isEmpty()) log("├─ ↡ No interceptions to apply")
+        if (interceptions.isEmpty()) log { "├─ ↡ No interceptions to apply" }
         next(0).invoke(scope, currentState, action, ::dispatch)
     }
 
@@ -107,9 +99,9 @@ abstract class EiffelViewModel<S : State, A : Action>(
     } else {
         { scope, state, action, dispatch ->
             interceptions[index].run {
-                if (index > 0) log("├─   ← Forwarded:    $action")
-                log("├─ ↓ Interception:  $debugName")
-                log("├─   → Received:     $action")
+                if (index > 0) log { "├─   ← Forwarded:    $action" }
+                log { "├─ ↓ Interception:  $debugName" }
+                log { "├─   → Received:     $action" }
                 invoke(scope, state, action, dispatch, next(index + 1))
             }
         }
@@ -118,10 +110,10 @@ abstract class EiffelViewModel<S : State, A : Action>(
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
         if (updatedState != currentState) {
-            log("├─ ↙ Updated state: $updatedState")
+            log { "├─ ↙ Updated state: $updatedState" }
             withContext(Dispatchers.Main) { _state.value = updatedState }
         } else {
-            log("├─ ↪ State unchanged, not emitted")
+            log { "├─ ↪ State unchanged, not emitted" }
         }
     }
 
@@ -154,7 +146,7 @@ abstract class EiffelViewModel<S : State, A : Action>(
      */
     fun dispatch(action: A) {
         scope.launch(actionDispatcher) {
-            log("↗ Dispatching: $action")
+            log { "↗ Dispatching: $action" }
             dispatchActor.send(action)
         }
     }
@@ -163,13 +155,13 @@ abstract class EiffelViewModel<S : State, A : Action>(
     @CallSuper
     override fun onCleared() {
         super.onCleared()
-        log("✝ Destroying ${this::class.java.simpleName}, canceling command scope")
+        log { "✝ Destroying ${this::class.java.simpleName}, canceling command scope" }
         scope.cancel()
     }
 
-    private fun log(message: String) {
+    private inline fun log(message: () -> String) {
         if (Eiffel.debugConfig.enabled && !excludeFromDebug) {
-            Eiffel.debugConfig.logger.log(Log.DEBUG, this::class.java.simpleName, message)
+            Eiffel.debugConfig.logger.log(Log.DEBUG, this::class.java.simpleName, message())
         }
     }
 }
