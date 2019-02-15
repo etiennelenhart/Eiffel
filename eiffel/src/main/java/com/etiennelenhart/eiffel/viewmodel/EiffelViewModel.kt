@@ -29,18 +29,26 @@ import kotlinx.coroutines.channels.consumeEach
  * @param[S] Type of associated [State].
  * @param[A] Type of supported [Action]s.
  * @param[initialState] Initial state to set when view model is created.
- * @param[update] Used to update the state according to an action.
- * @param[interceptions] Chain of [Interception] objects to apply to a dispatched [Action].
- * @param[interceptionDispatcher] [CoroutineDispatcher] to use for interception invocation, defaults to [Dispatchers.IO].
- * @param[actionDispatcher] [CoroutineDispatcher] to use for action dispatching, defaults to [Dispatchers.Default]. Mainly used for testing.
  */
-abstract class EiffelViewModel<S : State, A : Action>(
+abstract class EiffelViewModel<S : State, A : Action> internal constructor(
     initialState: S,
-    private val update: Update<S, A>,
-    private val interceptions: List<Interception<S, A>> = emptyList(),
-    private val interceptionDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val actionDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val actionDispatcher: CoroutineDispatcher
 ) : ViewModel() {
+
+    /**
+     * Used to update the state according to an action.
+     */
+    protected abstract val update: Update<S, A>
+
+    /**
+     * Chain of [Interception] objects to apply to a dispatched [Action].
+     */
+    protected open val interceptions: List<Interception<S, A>> = emptyList()
+
+    /**
+     * [CoroutineDispatcher] to use for interception invocation, defaults to [Dispatchers.IO].
+     */
+    protected open val interceptionDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     /**
      * Set to `true` to exclude this ViewModel from [Eiffel.debugMode].
@@ -83,6 +91,8 @@ abstract class EiffelViewModel<S : State, A : Action>(
      */
     val state: LiveData<S>
         get() = _state
+
+    constructor(initialState: S) : this(initialState, Dispatchers.Default)
 
     init {
         _state.value = initialState
