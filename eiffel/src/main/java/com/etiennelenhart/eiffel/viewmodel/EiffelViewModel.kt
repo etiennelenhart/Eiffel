@@ -89,8 +89,7 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
     /**
      * State that may be observed from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
      */
-    val state: LiveData<S>
-        get() = _state
+    val state: LiveData<S> = _state
 
     constructor(initialState: S) : this(initialState, Dispatchers.Default)
 
