@@ -22,7 +22,6 @@ sealed class LiveReaction<S : State, A : Action> {
      * @param[A] Type of [Action] to immediately return and continuously send.
      * @param[immediateAction] [Action] to return immediately so state updating is not interrupted, e.g. indicating a 'pending' operation.
      * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
-     * Don't forget to call [Channel.close] when done.
      */
     class Consuming<S : State, A : Action>(
         val immediateAction: A,
@@ -47,7 +46,6 @@ sealed class LiveReaction<S : State, A : Action> {
  * @param[A] Type of [Action] to immediately return and continuously send.
  * @param[immediateAction] [Action] to return immediately so state updating is not interrupted, e.g. indicating a 'pending' operation.
  * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
- * Don't forget to call [Channel.close] when done.
  * @return Instance of [Consuming] variant.
  */
 fun <S : State, A : Action> liveConsuming(immediateAction: A, block: suspend (state: S, action: A) -> ReceiveChannel<A>) =
