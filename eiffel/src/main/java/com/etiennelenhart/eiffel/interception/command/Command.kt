@@ -40,6 +40,10 @@ abstract class Command<S : State, A : Action> : Interception<S, A> {
                 scope.launch { reaction.block(state, action, dispatch) }
                 reaction.immediateAction
             }
+            is Reaction.Forwarding -> {
+                scope.launch { reaction.block(state, action, dispatch) }
+                next(scope, state, action, dispatch)
+            }
             is Reaction.Ignoring -> next(scope, state, action, dispatch)
         }
     }

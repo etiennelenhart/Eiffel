@@ -15,10 +15,11 @@ class CommandTest {
         object Decrement : TestAction()
         object Loading : TestAction()
         class Add(val amount: Int) : TestAction()
+        object Dummy : TestAction()
     }
 
     @Test
-    fun `GIVEN Command with consuming 'react' WHEN invoked with 'action' THEN 'immediateAction' is forwarded`() = runBlocking {
+    fun `GIVEN Command with consuming 'react' WHEN invoked with 'action' THEN 'immediateAction' is returned`() = runBlocking {
         val expected = TestAction.Loading
         val command = command<TestState, TestAction> {
             when (it) {
@@ -27,7 +28,7 @@ class CommandTest {
             }
         }
 
-        val actual = command(this, TestState, TestAction.Increment, { }, { _, _, action, _ -> action })
+        val actual = command(this, TestState, TestAction.Increment, { }, { _, _, _, _ -> TestAction.Dummy })
 
         assertEquals(expected, actual)
     }
@@ -38,6 +39,42 @@ class CommandTest {
         val command = command<TestState, TestAction> {
             when (it) {
                 TestAction.Increment -> consuming(TestAction.Loading) { _, _, dispatch ->
+                    delay(40)
+                    dispatch(expected)
+                }
+                else -> ignoring()
+            }
+        }
+
+        var actual: TestAction? = null
+        command(this, TestState, TestAction.Increment, { actual = it }, { _, _, _, _ -> TestAction.Dummy })
+
+        delay(80)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN Command with forwarding 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
+        val expected = TestAction.Loading
+        val command = command<TestState, TestAction> {
+            when (it) {
+                TestAction.Loading -> forwarding { _, _, _ -> delay(20) }
+                else -> ignoring()
+            }
+        }
+
+        var actual: TestAction? = null
+        command(this, TestState, expected, { }, { _, _, action, _ -> action.also { actual = it } })
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN Command with forwarding 'react' WHEN invoked with 'action' THEN 'dispatch' can be called in 'block'`() = runBlocking {
+        val expected = TestAction.Add(1)
+        val command = command<TestState, TestAction> {
+            when (it) {
+                TestAction.Increment -> forwarding { _, _, dispatch ->
                     delay(40)
                     dispatch(expected)
                 }
@@ -62,7 +99,8 @@ class CommandTest {
             }
         }
 
-        val actual = command(this, TestState, expected, { }, { _, _, action, _ -> action })
+        var actual: TestAction? = null
+        command(this, TestState, expected, { }, { _, _, action, _ -> action.also { actual = it } })
 
         assertEquals(expected, actual)
     }
