@@ -50,6 +50,13 @@ abstract class LiveCommand<S : State, A : Action> : Interception<S, A> {
                 }
                 reaction.immediateAction
             }
+            is LiveReaction.Forwarding -> {
+                scope.launch {
+                    val channel = reaction.block(state, action)
+                    channel.consumeEach(dispatch)
+                }
+                next(scope, state, action, dispatch)
+            }
             is LiveReaction.Ignoring -> next(scope, state, action, dispatch)
         }
     }

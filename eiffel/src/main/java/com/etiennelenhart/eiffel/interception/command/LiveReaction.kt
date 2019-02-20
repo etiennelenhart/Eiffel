@@ -1,7 +1,6 @@
 package com.etiennelenhart.eiffel.interception.command
 
-import com.etiennelenhart.eiffel.interception.command.LiveReaction.Consuming
-import com.etiennelenhart.eiffel.interception.command.LiveReaction.Ignoring
+import com.etiennelenhart.eiffel.interception.command.LiveReaction.*
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import kotlinx.coroutines.channels.Channel
@@ -29,6 +28,15 @@ sealed class LiveReaction<S : State, A : Action> {
     ) : LiveReaction<S, A>()
 
     /**
+     * Variant of [LiveReaction] indicating the intent to consume and forward the received [Action].
+     *
+     * @param[S] Type of [State] to receive.
+     * @param[A] Type of [Action] to react to and continuously send.
+     * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
+     */
+    class Forwarding<S : State, A : Action>(val block: suspend (state: S, action: A) -> ReceiveChannel<A>) : LiveReaction<S, A>()
+
+    /**
      * Variant of [LiveReaction] indicating that the [Action] is ignored and should be forwarded.
      *
      * *Note: Type parameters are required since they occur in invariant positions in [Consuming].*
@@ -50,6 +58,16 @@ sealed class LiveReaction<S : State, A : Action> {
  */
 fun <S : State, A : Action> liveConsuming(immediateAction: A, block: suspend (state: S, action: A) -> ReceiveChannel<A>) =
     LiveReaction.Consuming(immediateAction, block)
+
+/**
+ * Convenience builder function for the [Forwarding] variant of [LiveReaction].
+ *
+ * @param[S] Type of [State] to receive.
+ * @param[A] Type of [Action] to react to and continuously send.
+ * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
+ * @return Instance of [Forwarding] variant.
+ */
+fun <S : State, A : Action> liveForwarding(block: suspend (state: S, action: A) -> ReceiveChannel<A>) = LiveReaction.Forwarding(block)
 
 /**
  * Convenience builder function for the [Ignoring] variant of [LiveReaction].
