@@ -3,6 +3,7 @@ package com.etiennelenhart.eiffel.interception.command
 import com.etiennelenhart.eiffel.interception.command.LiveReaction.*
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 
@@ -24,7 +25,7 @@ sealed class LiveReaction<S : State, A : Action> {
      */
     class Consuming<S : State, A : Action>(
         val immediateAction: A,
-        val block: suspend (state: S, action: A) -> ReceiveChannel<A>
+        val block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>
     ) : LiveReaction<S, A>()
 
     /**
@@ -34,7 +35,7 @@ sealed class LiveReaction<S : State, A : Action> {
      * @param[A] Type of [Action] to react to and continuously send.
      * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
      */
-    class Forwarding<S : State, A : Action>(val block: suspend (state: S, action: A) -> ReceiveChannel<A>) : LiveReaction<S, A>()
+    class Forwarding<S : State, A : Action>(val block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) : LiveReaction<S, A>()
 
     /**
      * Variant of [LiveReaction] indicating that the [Action] is ignored and should be forwarded.
@@ -56,7 +57,7 @@ sealed class LiveReaction<S : State, A : Action> {
  * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
  * @return Instance of [Consuming] variant.
  */
-fun <S : State, A : Action> liveConsuming(immediateAction: A, block: suspend (state: S, action: A) -> ReceiveChannel<A>) =
+fun <S : State, A : Action> liveConsuming(immediateAction: A, block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) =
     LiveReaction.Consuming(immediateAction, block)
 
 /**
@@ -67,7 +68,7 @@ fun <S : State, A : Action> liveConsuming(immediateAction: A, block: suspend (st
  * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
  * @return Instance of [Forwarding] variant.
  */
-fun <S : State, A : Action> liveForwarding(block: suspend (state: S, action: A) -> ReceiveChannel<A>) = LiveReaction.Forwarding(block)
+fun <S : State, A : Action> liveForwarding(block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) = LiveReaction.Forwarding(block)
 
 /**
  * Convenience builder function for the [Ignoring] variant of [LiveReaction].

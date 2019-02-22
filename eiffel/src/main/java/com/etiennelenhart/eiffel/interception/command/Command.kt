@@ -37,11 +37,11 @@ abstract class Command<S : State, A : Action> : Interception<S, A> {
     final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A? {
         return when (val reaction = react(action)) {
             is Reaction.Consuming -> {
-                scope.launch { reaction.block(state, action, dispatch) }
+                scope.launch { reaction.block(state, dispatch) }
                 reaction.immediateAction
             }
             is Reaction.Forwarding -> {
-                scope.launch { reaction.block(state, action, dispatch) }
+                scope.launch { reaction.block(state, dispatch) }
                 next(scope, state, action, dispatch)
             }
             is Reaction.Ignoring -> next(scope, state, action, dispatch)
