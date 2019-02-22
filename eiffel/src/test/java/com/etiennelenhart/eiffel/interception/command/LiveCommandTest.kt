@@ -26,7 +26,7 @@ class LiveCommandTest {
         val expected = TestAction.Loading
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(expected) { _, _ -> produce { delay(20) } }
+                TestAction.Increment -> liveConsuming(expected) { produce { delay(20) } }
                 else -> liveIgnoring()
             }
         }
@@ -41,7 +41,7 @@ class LiveCommandTest {
         val expected = TestAction.Add(1)
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
+                TestAction.Increment -> liveConsuming(TestAction.Loading) {
                     produce {
                         delay(40)
                         send(expected)
@@ -63,7 +63,7 @@ class LiveCommandTest {
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() = runBlocking {
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
+                TestAction.Increment -> liveConsuming(TestAction.Loading) {
                     produce {
                         send(TestAction.Add(1))
                         delay(40)
@@ -87,7 +87,7 @@ class LiveCommandTest {
         val expected = TestAction.Loading
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveForwarding { _, _ -> produce { delay(20) } }
+                TestAction.Increment -> liveForwarding { produce { delay(20) } }
                 else -> liveIgnoring()
             }
         }
@@ -103,7 +103,7 @@ class LiveCommandTest {
         val expected = TestAction.Add(1)
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveForwarding { _, _ ->
+                TestAction.Increment -> liveForwarding {
                     produce {
                         delay(40)
                         send(expected)
@@ -126,7 +126,7 @@ class LiveCommandTest {
         runBlocking {
             val command = liveCommand<TestState, TestAction> {
                 when (it) {
-                    TestAction.Increment -> liveForwarding { _, _ ->
+                    TestAction.Increment -> liveForwarding {
                         produce {
                             send(TestAction.Add(1))
                             delay(40)
@@ -150,7 +150,7 @@ class LiveCommandTest {
         val expected = TestAction.Decrement
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ -> produce { delay(40) } }
+                TestAction.Increment -> liveConsuming(TestAction.Loading) { produce { delay(40) } }
                 else -> liveIgnoring()
             }
         }
