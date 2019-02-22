@@ -45,14 +45,14 @@ abstract class LiveCommand<S : State, A : Action> : Interception<S, A> {
         return when (val reaction = react(action)) {
             is LiveReaction.Consuming -> {
                 scope.launch {
-                    val channel = reaction.block(state)
+                    val channel = reaction.block(scope, state)
                     channel.consumeEach(dispatch)
                 }
                 reaction.immediateAction
             }
             is LiveReaction.Forwarding -> {
                 scope.launch {
-                    val channel = reaction.block(state)
+                    val channel = reaction.block(scope, state)
                     channel.consumeEach(dispatch)
                 }
                 next(scope, state, action, dispatch)
