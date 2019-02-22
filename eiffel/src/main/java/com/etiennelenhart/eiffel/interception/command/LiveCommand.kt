@@ -41,14 +41,21 @@ abstract class LiveCommand<S : State, A : Action> : Interception<S, A> {
     protected abstract fun react(action: A): LiveReaction<S, A>
 
     @UseExperimental(ObsoleteCoroutinesApi::class)
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A {
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A? {
         return when (val reaction = react(action)) {
             is LiveReaction.Consuming -> {
                 scope.launch {
-                    val channel = reaction.block(state, action)
+                    val channel = reaction.block(scope, state)
                     channel.consumeEach(dispatch)
                 }
                 reaction.immediateAction
+            }
+            is LiveReaction.Forwarding -> {
+                scope.launch {
+                    val channel = reaction.block(scope, state)
+                    channel.consumeEach(dispatch)
+                }
+                next(scope, state, action, dispatch)
             }
             is LiveReaction.Ignoring -> next(scope, state, action, dispatch)
         }
@@ -61,13 +68,19 @@ abstract class LiveCommand<S : State, A : Action> : Interception<S, A> {
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
+ * @param[debugName] Custom name to use when logging the [LiveCommand] in debug mode.
  * @param[react] Lambda expression called with the received [Action]. Return either [LiveReaction.Consuming] or [LiveReaction.Ignoring].
  * (see [LiveCommand.react])
  * @return An object extending [LiveCommand].
 */
  */
-fun <S : State, A : Action> liveCommand(react: (action: A) -> LiveReaction<S, A>): LiveCommand<S, A> {
+fun <S : State, A : Action> liveCommand(
+    debugName: String = "",
+    react: (action: A) -> LiveReaction<S, A>
+): LiveCommand<S, A> {
     return object : LiveCommand<S, A>() {
+        override val debugName: String = debugName.ifEmpty { toString() }
+
         override fun react(action: A) = react(action)
     }
 }

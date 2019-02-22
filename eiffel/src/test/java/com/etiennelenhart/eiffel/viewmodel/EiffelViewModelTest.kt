@@ -6,7 +6,6 @@ import com.etiennelenhart.eiffel.interception.Interception
 import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
-import com.etiennelenhart.eiffel.state.Update
 import com.etiennelenhart.eiffel.state.update
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,10 +16,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @ObsoleteCoroutinesApi
 @UseExperimental(ExperimentalCoroutinesApi::class)
@@ -44,13 +40,12 @@ class EiffelViewModelTest {
         object Other : TestAction()
     }
 
-    val testStateUpdate = update<TestState, TestAction> { state, action ->
-        val count = state.count
+    val testStateUpdate = update<TestState, TestAction> { action ->
         when (action) {
-            TestAction.Increment -> state.copy(count = count + 1)
-            TestAction.Decrement -> state.copy(count = count - 1)
-            is TestAction.Add -> state.copy(count = count + action.amount)
-            TestAction.Other -> state.copy(other = "changed")
+            TestAction.Increment -> copy(count = count + 1)
+            TestAction.Decrement -> copy(count = count - 1)
+            is TestAction.Add -> copy(count = count + action.amount)
+            TestAction.Other -> copy(other = "changed")
         }
     }
 
@@ -58,7 +53,10 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called THEN 'action' is processed`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
+            object : EiffelViewModel<TestState, TestAction>(TestState(), Dispatchers.Unconfined) {
+                override val update = testStateUpdate
+                override val interceptionDispatcher = Dispatchers.Unconfined
+            }
 
         var actual = 0
         viewModel.state.observeForever { actual = it.count }
@@ -71,7 +69,10 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called multiple times THEN all 'actions' are processed`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {}
+            object : EiffelViewModel<TestState, TestAction>(TestState(), Dispatchers.Unconfined) {
+                override val update = testStateUpdate
+                override val interceptionDispatcher = Dispatchers.Unconfined
+            }
 
         var actual = 0
         viewModel.state.observeForever { actual = it.count }
@@ -93,7 +94,10 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass with a source 'LiveData' WHEN 'observeStateForever' called THEN updated state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {
+            object : EiffelViewModel<TestState, TestAction>(TestState(), Dispatchers.Unconfined) {
+                override val update = testStateUpdate
+                override val interceptionDispatcher = Dispatchers.Unconfined
+
                 init {
                     addStateSource(OneLiveData()) { TestAction.Add(it) }
                 }
@@ -109,7 +113,10 @@ class EiffelViewModelTest {
     fun `GIVEN EiffelViewModel subclass with a removed source 'LiveData' WHEN 'observeStateForever' called THEN initial state is emitted`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
-            object : EiffelViewModel<TestState, TestAction>(TestState(), testStateUpdate, emptyList(), Dispatchers.Unconfined, Dispatchers.Unconfined) {
+            object : EiffelViewModel<TestState, TestAction>(TestState(), Dispatchers.Unconfined) {
+                override val update = testStateUpdate
+                override val interceptionDispatcher = Dispatchers.Unconfined
+
                 init {
                     val source = OneLiveData()
                     addStateSource(source) { TestAction.Add(it) }
@@ -131,10 +138,10 @@ class EiffelViewModelTest {
         object Third : InterceptionAction()
     }
 
-    object InterceptionStateUpdate : Update<InterceptionState, InterceptionAction> {
-        override fun invoke(state: InterceptionState, action: InterceptionAction) = when (action) {
-            InterceptionAction.Third -> state.copy(correct = true)
-            else -> state
+    val interceptionStateUpdate = update<InterceptionState, InterceptionAction> { action ->
+        when (action) {
+            InterceptionAction.Third -> copy(correct = true)
+            else -> this
         }
     }
 
@@ -145,7 +152,7 @@ class EiffelViewModelTest {
             action: InterceptionAction,
             dispatch: (action: InterceptionAction) -> Unit,
             next: Next<InterceptionState, InterceptionAction>
-        ): InterceptionAction {
+        ): InterceptionAction? {
             return if (action is InterceptionAction.First) {
                 next(scope, state, InterceptionAction.Second, dispatch)
             } else {
@@ -161,7 +168,7 @@ class EiffelViewModelTest {
             action: InterceptionAction,
             dispatch: (action: InterceptionAction) -> Unit,
             next: Next<InterceptionState, InterceptionAction>
-        ): InterceptionAction {
+        ): InterceptionAction? {
             return if (action is InterceptionAction.Second) {
                 next(scope, state, InterceptionAction.Third, dispatch)
             } else {
@@ -173,18 +180,44 @@ class EiffelViewModelTest {
     @Test
     fun `GIVEN EiffelViewModel subclass with interceptions WHEN 'dispatch' called THEN all interceptions are applied`() {
         @UseExperimental(ExperimentalCoroutinesApi::class)
-        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(
-            InterceptionState(),
-            InterceptionStateUpdate,
-            listOf(firstInterception, secondInterception),
-            Dispatchers.Unconfined,
-            Dispatchers.Unconfined
-        ) {}
+        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState(), Dispatchers.Unconfined) {
+            override val update = interceptionStateUpdate
+            override val interceptions = listOf(firstInterception, secondInterception)
+            override val interceptionDispatcher = Dispatchers.Unconfined
+        }
 
         var actual = false
         viewModel.state.observeForever { actual = it.correct }
         viewModel.dispatch(InterceptionAction.First)
 
         assertTrue(actual)
+    }
+
+    val blockingInterception = object : Interception<InterceptionState, InterceptionAction> {
+        override suspend fun invoke(
+            scope: CoroutineScope,
+            state: InterceptionState,
+            action: InterceptionAction,
+            dispatch: (action: InterceptionAction) -> Unit,
+            next: Next<InterceptionState, InterceptionAction>
+        ): InterceptionAction? {
+            return null
+        }
+    }
+
+    @Test
+    fun `GIVEN EiffelViewModel subclass with blocking interception WHEN 'dispatch' called THEN state is not updated`() {
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState(), Dispatchers.Unconfined) {
+            override val update = interceptionStateUpdate
+            override val interceptions = listOf(blockingInterception, firstInterception, secondInterception)
+            override val interceptionDispatcher = Dispatchers.Unconfined
+        }
+
+        var actual = false
+        viewModel.state.observeForever { actual = it.correct }
+        viewModel.dispatch(InterceptionAction.First)
+
+        assertFalse(actual)
     }
 }

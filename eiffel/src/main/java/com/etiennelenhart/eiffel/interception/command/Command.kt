@@ -34,11 +34,15 @@ abstract class Command<S : State, A : Action> : Interception<S, A> {
      */
     protected abstract fun react(action: A): Reaction<S, A>
 
-    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A {
+    final override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (A) -> Unit, next: Next<S, A>): A? {
         return when (val reaction = react(action)) {
             is Reaction.Consuming -> {
-                scope.launch { reaction.block(state, action, dispatch) }
+                scope.launch { reaction.block(state, dispatch) }
                 reaction.immediateAction
+            }
+            is Reaction.Forwarding -> {
+                scope.launch { reaction.block(state, dispatch) }
+                next(scope, state, action, dispatch)
             }
             is Reaction.Ignoring -> next(scope, state, action, dispatch)
         }
@@ -50,11 +54,17 @@ abstract class Command<S : State, A : Action> : Interception<S, A> {
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
+ * @param[debugName] Custom name to use when logging the [Command] in debug mode.
  * @param[react] Lambda expression called with the received [Action]. Return either [Reaction.Consuming] or [Reaction.Ignoring]. (see [Command.react])
  * @return An object extending [Command].
  */
-fun <S : State, A : Action> command(react: (action: A) -> Reaction<S, A>): Command<S, A> {
+fun <S : State, A : Action> command(
+    debugName: String = "",
+    react: (action: A) -> Reaction<S, A>
+): Command<S, A> {
     return object : Command<S, A>() {
+        override val debugName: String = debugName.ifEmpty { toString() }
+
         override fun react(action: A) = react(action)
     }
 }

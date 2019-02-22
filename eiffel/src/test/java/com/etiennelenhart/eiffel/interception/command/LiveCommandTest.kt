@@ -18,19 +18,20 @@ class LiveCommandTest {
         object Decrement : TestAction()
         object Loading : TestAction()
         class Add(val amount: Int) : TestAction()
+        object Dummy : TestAction()
     }
 
     @Test
-    fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN 'immediateAction' is forwarded`() = runBlocking {
+    fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN 'immediateAction' is returned`() = runBlocking {
         val expected = TestAction.Loading
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(expected) { _, _ -> produce { delay(20) } }
+                TestAction.Increment -> liveConsuming(expected) { produce { delay(20) } }
                 else -> liveIgnoring()
             }
         }
 
-        val actual = command(this, TestState, TestAction.Increment, { }, { _, _, action, _ -> action })
+        val actual = command(this, TestState, TestAction.Increment, { }, { _, _, _, _ -> TestAction.Dummy })
 
         assertEquals(expected, actual)
     }
@@ -40,9 +41,9 @@ class LiveCommandTest {
         val expected = TestAction.Add(1)
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
+                TestAction.Increment -> liveConsuming(TestAction.Loading) {
                     produce {
-                        delay(20)
+                        delay(40)
                         send(expected)
                         close()
                     }
@@ -52,9 +53,9 @@ class LiveCommandTest {
         }
 
         var actual: TestAction? = null
-        command(this, TestState, TestAction.Increment, { actual = it }, { _, _, action, _ -> action })
+        command(this, TestState, TestAction.Increment, { actual = it }, { _, _, _, _ -> TestAction.Dummy })
 
-        delay(40)
+        delay(80)
         assertEquals(expected, actual)
     }
 
@@ -62,10 +63,10 @@ class LiveCommandTest {
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() = runBlocking {
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ ->
+                TestAction.Increment -> liveConsuming(TestAction.Loading) {
                     produce {
                         send(TestAction.Add(1))
-                        delay(20)
+                        delay(40)
                         send(TestAction.Add(1))
                         close()
                     }
@@ -75,24 +76,88 @@ class LiveCommandTest {
         }
 
         var actual = 0
-        command(this, TestState, TestAction.Increment, { actual++ }, { _, _, action, _ -> action })
+        command(this, TestState, TestAction.Increment, { actual++ }, { _, _, _, _ -> TestAction.Dummy })
 
-        delay(40)
+        delay(80)
         assertEquals(2, actual)
     }
+
+    @Test
+    fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
+        val expected = TestAction.Loading
+        val command = liveCommand<TestState, TestAction> {
+            when (it) {
+                TestAction.Increment -> liveForwarding { produce { delay(20) } }
+                else -> liveIgnoring()
+            }
+        }
+
+        var actual: TestAction? = null
+        command(this, TestState, expected, { }, { _, _, action, _ -> action.also { actual = it } })
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN calling 'send' on channel causes dispatch`() = runBlocking {
+        val expected = TestAction.Add(1)
+        val command = liveCommand<TestState, TestAction> {
+            when (it) {
+                TestAction.Increment -> liveForwarding {
+                    produce {
+                        delay(40)
+                        send(expected)
+                        close()
+                    }
+                }
+                else -> liveIgnoring()
+            }
+        }
+
+        var actual: TestAction? = null
+        command(this, TestState, TestAction.Increment, { actual = it }, { _, _, _, _ -> TestAction.Dummy })
+
+        delay(80)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() =
+        runBlocking {
+            val command = liveCommand<TestState, TestAction> {
+                when (it) {
+                    TestAction.Increment -> liveForwarding {
+                        produce {
+                            send(TestAction.Add(1))
+                            delay(40)
+                            send(TestAction.Add(1))
+                            close()
+                        }
+                    }
+                    else -> liveIgnoring()
+                }
+            }
+
+            var actual = 0
+            command(this, TestState, TestAction.Increment, { actual++ }, { _, _, _, _ -> TestAction.Dummy })
+
+            delay(80)
+            assertEquals(2, actual)
+        }
 
     @Test
     fun `GIVEN LiveCommand with ignoring 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
         val expected = TestAction.Decrement
         val command = liveCommand<TestState, TestAction> {
             when (it) {
-                TestAction.Increment -> liveConsuming(TestAction.Loading) { _, _ -> produce { delay(20) } }
+                TestAction.Increment -> liveConsuming(TestAction.Loading) { produce { delay(40) } }
                 else -> liveIgnoring()
             }
         }
 
         val actual = command(this, TestState, expected, { }, { _, _, action, _ -> action })
 
+        delay(80)
         assertEquals(expected, actual)
     }
 }
