@@ -37,6 +37,14 @@ package com.etiennelenhart.eiffel.state
 abstract class ViewEvent {
 
     internal var handled = false
+
+    final override fun equals(other: Any?): Boolean {
+        if (other !is ViewEvent) return false
+
+        return other.handled == handled
+    }
+
+    final override fun hashCode(): Int = handled.hashCode()
 }
 
 /**
