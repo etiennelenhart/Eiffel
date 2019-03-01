@@ -1,7 +1,5 @@
 package com.etiennelenhart.eiffel.state
 
-import java.util.Arrays
-
 /**
  * Base class for one-off state events that require a view interaction.
  *
@@ -43,10 +41,10 @@ abstract class ViewEvent {
     final override fun equals(other: Any?): Boolean {
         if (other !is ViewEvent) return false
 
-        return other::class == this::class && other.handled == handled
+        return other.handled == handled
     }
 
-    final override fun hashCode(): Int = Arrays.hashCode(arrayOf(this::class, handled))
+    final override fun hashCode(): Int = handled.hashCode()
 }
 
 /**
