@@ -6,6 +6,8 @@ import com.etiennelenhart.eiffel.interception.Interception
 import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
+import com.etiennelenhart.eiffel.state.ViewEvent
+import com.etiennelenhart.eiffel.state.peek
 import com.etiennelenhart.eiffel.state.update
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -219,5 +221,41 @@ class EiffelViewModelTest {
         viewModel.dispatch(InterceptionAction.First)
 
         assertFalse(actual)
+    }
+
+    data class TestViewEvent(val value: Int) : ViewEvent()
+
+    data class ViewEventState(val viewEvent: TestViewEvent? = null) : State
+
+    data class DoTestEvent(val data: Int) : Action
+
+    val viewEventUpdate = update<ViewEventState, DoTestEvent> { copy(viewEvent = TestViewEvent(it.data)) }
+
+    @Test
+    fun `GIVEN EiffelViewModel subclass WHEN handled 'ViewEvent' dispatched multiple times THEN state is updated`() {
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel =
+            object : EiffelViewModel<ViewEventState, DoTestEvent>(ViewEventState(), Dispatchers.Unconfined) {
+                override val update = viewEventUpdate
+                override val interceptionDispatcher = Dispatchers.Unconfined
+            }
+
+        var actual = 0
+        viewModel.state.observeForever { state ->
+            state.viewEvent?.peek {
+                actual++
+                true
+            }
+        }
+
+        viewModel.dispatch(DoTestEvent(42))
+        viewModel.dispatch(DoTestEvent(24))
+        assertEquals(2, actual)
+
+        actual = 0
+
+        viewModel.dispatch(DoTestEvent(42))
+        viewModel.dispatch(DoTestEvent(42))
+        assertEquals(2, actual)
     }
 }
