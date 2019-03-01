@@ -27,10 +27,13 @@ import com.etiennelenhart.eiffel.state.State
  * ```
  *
  * @param[S] Type of this [State].
- * @param[B] Type of mapped [BindingState].
+ * @param[B] Type of mapped [BindableState].
  * @param[mapping] [BindableMapping] that maps this state to a bindable one.
  * @return A [LiveData] with values of type [B].
  */
 fun <S : State, B : BindableState> LiveData<S>.toBindable(mapping: BindableMapping<S, B>): LiveData<B> {
-    return MediatorLiveData<B>().apply { addSource(this@toBindable) { value = mapping(it, value) } }
+    return MediatorLiveData<B>().apply {
+        value = mapping.initialState
+        addSource(this@toBindable) { value = mapping(it, value!!) }
+    }
 }
