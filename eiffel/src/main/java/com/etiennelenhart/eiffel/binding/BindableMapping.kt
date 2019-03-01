@@ -16,9 +16,9 @@ import com.etiennelenhart.eiffel.state.State
  *
  * @param[S] Type of received [State].
  * @param[B] Type of [BindableState] to map to.
- * @param[initialState] Initial value of the [BindableState] used as initial receiver for [map].
+ * @param[initialState] Initial value of the [BindableState].
  */
-abstract class BindableMapping<S : State, B : BindableState>(private val initialState: B) {
+abstract class BindableMapping<S : State, B : BindableState>(val initialState: B) {
 
     /**
      * Lambda expression to map the received state to a [BindableState].
@@ -30,7 +30,7 @@ abstract class BindableMapping<S : State, B : BindableState>(private val initial
      */
     protected abstract val map: B.(state: S) -> B
 
-    operator fun invoke(state: S, currentBindableState: B?) = (currentBindableState ?: initialState).map(state)
+    operator fun invoke(state: S, currentBindableState: B) = currentBindableState.map(state)
 }
 
 /**
@@ -38,7 +38,7 @@ abstract class BindableMapping<S : State, B : BindableState>(private val initial
  *
  * @param[S] Type of received [State].
  * @param[B] Type of [BindableState] to map to.
- * @param[initialState] Initial value of the [BindableState] used as initial receiver for [map].
+ * @param[initialState] Initial value of the [BindableState].
  * @param[map] Lambda expression to map the received state to a [BindableState]. (see [BindableMapping.map])
  * @return An object extending [BindableMapping].
  */
