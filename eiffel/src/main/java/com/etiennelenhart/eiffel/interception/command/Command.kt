@@ -21,16 +21,18 @@ import kotlinx.coroutines.*
 abstract class Command<S : State, A : Action> : Interception<S, A> {
 
     /**
-     * Return either [Reaction.Ignoring] to forward the [action] or [Reaction.Consuming] with an `immediateAction` to immediately return and
-     * a suspending `block` to consume the [action]. The suspending `block` is called asynchronously and not awaited to allow immediately
-     * returning the `immediateAction`. To update state from the `block` call the provided `dispatch` lambda expression.
-     * The suspending block is scoped to the corresponding [EiffelViewModel]'s [CoroutineScope], so it will be cancelled when
-     * [EiffelViewModel.onCleared] is called during execution.
-     * Since cancellation is cooperative with coroutines, if the side effect wants to support it either use a [coroutineScope] builder and
-     * check for [isActive] or use [yield].
+     * Return one of the following:
+     * * [Reaction.Ignoring] - Simply forwards the [action].
+     * * [Reaction.Consuming] - Immediately returns its `immediateAction` and passes the [action] to its suspending `block`.
+     * * [Reaction.Forwarding] - Similar to `Consuming` but forwards the [action] instead of returning.
+     *
+     * The suspending `block` is called asynchronously and not awaited. To update state from the `block` call the provided `dispatch` lambda expression.
+     * The block is scoped to the corresponding [EiffelViewModel]'s [CoroutineScope], so it will be cancelled when [EiffelViewModel.onCleared] is called
+     * during execution. Since cancellation is cooperative with coroutines, if the side effect wants to support it either use a [coroutineScope] builder
+     * and check for [isActive] or use [yield].
      *
      * @param[action] The received [Action].
-     * @return Either [Reaction.Consuming] or [Reaction.Ignoring].
+     * @return One of [Reaction.Consuming], [Reaction.Forwarding] or [Reaction.Ignoring].
      */
     protected abstract fun react(action: A): Reaction<S, A>
 
@@ -55,16 +57,22 @@ abstract class Command<S : State, A : Action> : Interception<S, A> {
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].
  * @param[debugName] Custom name to use when logging the [Command] in debug mode.
- * @param[react] Lambda expression called with the received [Action]. Return either [Reaction.Consuming] or [Reaction.Ignoring]. (see [Command.react])
+ * @param[react] Lambda expression called with the received [Action]. Use one of [ReactionScope.consuming], [ReactionScope.forwarding]
+ * or [ReactionScope.ignoring]. (see [Command.react])
  * @return An object extending [Command].
  */
 fun <S : State, A : Action> command(
     debugName: String = "",
-    react: (action: A) -> Reaction<S, A>
+    react: ReactionScope.(action: A) -> Reaction<S, A>
 ): Command<S, A> {
     return object : Command<S, A>() {
         override val debugName: String = debugName.ifEmpty { toString() }
 
-        override fun react(action: A) = react(action)
+        override fun react(action: A) = ReactionScope.react(action)
     }
 }
+
+/**
+ * Only used to scope [Reaction] builder functions.
+ */
+object ReactionScope
