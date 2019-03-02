@@ -19,6 +19,7 @@ import kotlin.reflect.KProperty
  * @param[value] Initial value.
  * @param[fieldId] The id of the generated BR field.
  */
+@Deprecated("Deprecated since BindingState is deprecated.")
 class NotifyBinding<T : Any>(private var value: T, private val fieldId: Int) : ReadWriteProperty<BaseObservable, T> {
 
     override fun getValue(thisRef: BaseObservable, property: KProperty<*>) = value
@@ -44,4 +45,6 @@ class NotifyBinding<T : Any>(private var value: T, private val fieldId: Int) : R
  * @param[value] Initial value.
  * @param[fieldId] The id of the generated BR field.
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Deprecated since BindingState is deprecated.")
 fun <T : Any> BaseObservable.notifyBinding(value: T, fieldId: Int) = NotifyBinding(value, fieldId)
