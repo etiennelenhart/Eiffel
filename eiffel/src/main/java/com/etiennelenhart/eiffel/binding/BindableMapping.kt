@@ -7,7 +7,7 @@ import com.etiennelenhart.eiffel.state.State
  *
  * Example:
  * ```
- * class SampleStateMapping : BindableMapping<SampleState, BindableSampleState>(BindableSampleState()) {
+ * class SampleStateMapping : BindableMapping<SampleState, BindableSampleState>() {
  *     override fun BindableSampleState.map(state: SampleState) = copy(
  *         requiredHintVisible = state.sample.isBlank()
  *     )
@@ -16,34 +16,32 @@ import com.etiennelenhart.eiffel.state.State
  *
  * @param[S] Type of received [State].
  * @param[B] Type of [BindableState] to map to.
- * @param[initialState] Initial value of the [BindableState].
  */
-abstract class BindableMapping<S : State, B : BindableState>(val initialState: B) {
+abstract class BindableMapping<S : State, B : BindableState> {
 
     /**
-     * Lambda expression to map the received state to a [BindableState].
+     * Map the received state to a [BindableState].
      *
      * It's recommended to use `copy` here to keep performance impact minimal.
      *
-     * @receiver[B] Current value of the mapped [BindableState], initially [initialState].
+     * @receiver[B] Current value of the mapped [BindableState].
      * @return [BindingState] mapped from the received state.
      */
-    protected abstract val map: B.(state: S) -> B
+    protected abstract fun B.map(state: S): B
 
     operator fun invoke(state: S, currentBindableState: B) = currentBindableState.map(state)
 }
 
 /**
- * Convenience builder function that returns an object extending [BindableMapping]. Passes provided lambdas to overridden properties.
+ * Convenience builder function that returns an object extending [BindableMapping]. Passes provided lambda to overridden function.
  *
  * @param[S] Type of received [State].
  * @param[B] Type of [BindableState] to map to.
- * @param[initialState] Initial value of the [BindableState].
  * @param[map] Lambda expression to map the received state to a [BindableState]. (see [BindableMapping.map])
  * @return An object extending [BindableMapping].
  */
-fun <S : State, B : BindableState> bindableMapping(initialState: B, map: B.(state: S) -> B): BindableMapping<S, B> {
-    return object : BindableMapping<S, B>(initialState) {
-        override val map = map
+fun <S : State, B : BindableState> bindableMapping(map: B.(state: S) -> B): BindableMapping<S, B> {
+    return object : BindableMapping<S, B>() {
+        override fun B.map(state: S) = map(state)
     }
 }
