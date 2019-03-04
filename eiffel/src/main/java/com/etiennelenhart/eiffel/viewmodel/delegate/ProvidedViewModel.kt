@@ -18,6 +18,7 @@ import kotlin.reflect.KProperty
  * @param[T] Type of the provided view model.
  * @param[viewModelClass] Java class of the provided view model.
  */
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel.")
 class ProvidedViewModel<out T : ViewModel>(private val viewModelClass: Class<T>) : ReadOnlyProperty<FragmentActivity, T> {
 
     private var value: T? = null
@@ -38,4 +39,6 @@ class ProvidedViewModel<out T : ViewModel>(private val viewModelClass: Class<T>)
  *
  * @param[T] Type of the provided view model.
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel.")
 inline fun <reified T : ViewModel> FragmentActivity.providedViewModel() = ProvidedViewModel(T::class.java)
