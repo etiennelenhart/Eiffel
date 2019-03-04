@@ -269,13 +269,12 @@ open class InterceptionBuilder<S : State, A : Action> {
      *
      * @see addAdapter
      * @param[T] Target [Action] to adapt on.
-     * @param[R] Adapted [Action].
      * @param[debugName] Name to use when logging is enabled with [Eiffel.debugMode].
      * @param[adapt] Lambda expression that adapts the given [Action] to a new one.
      */
-    inline fun <reified T : A, R : A> addAdapterOn(
+    inline fun <reified T : A> addAdapterOn(
         debugName: String = "",
-        crossinline adapt: (action: T) -> R
+        crossinline adapt: (action: T) -> A
     ) = addAdapter(debugName) { action -> if (action is T) adapt(action) else action }
 
     /**
