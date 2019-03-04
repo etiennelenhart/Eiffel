@@ -20,7 +20,7 @@ import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
 
 /**
- * A [ViewModel] supporting an observable state and dispatching of actions to update this state.
+ * A [ViewModel] supporting an observable [state] and dispatching of actions to update this state, which may be modified by [interceptions].
  *
  * By default if [Eiffel.debugMode] is enabled then every instance of [EiffelViewModel] will have
  * its [Update], [Interception] and [Action]'s logged.  To exclude a specific [EiffelViewModel] from
@@ -32,7 +32,7 @@ import kotlinx.coroutines.channels.consumeEach
  */
 abstract class EiffelViewModel<S : State, A : Action> internal constructor(
     initialState: S,
-    private val actionDispatcher: CoroutineDispatcher
+    actionDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     /**
@@ -154,10 +154,8 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
      * Dispatches the given action by queuing it up for being processed by the state [update].
      */
     fun dispatch(action: A) {
-        scope.launch(actionDispatcher) {
-            log { "↗ Dispatching: $action" }
-            dispatchActor.send(action)
-        }
+        log { "↗ Dispatching: $action" }
+        dispatchActor.offer(action)
     }
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
