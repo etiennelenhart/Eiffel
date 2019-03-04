@@ -118,11 +118,11 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
 
     private suspend fun applyUpdate(currentState: S, action: A) {
         val updatedState = update(currentState, action)
-        if (updatedState != currentState) {
+        if (updatedState != null) {
             log { "├─ ↙ Updated state: $updatedState" }
             withContext(Dispatchers.Main) { _state.value = updatedState }
         } else {
-            log { "├─ ↪ State unchanged, not emitted" }
+            log { "├─ ↪ State not updated, value not emitted." }
         }
     }
 
