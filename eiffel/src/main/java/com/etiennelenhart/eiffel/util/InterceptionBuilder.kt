@@ -9,15 +9,14 @@ import com.etiennelenhart.eiffel.interception.adapter
 import com.etiennelenhart.eiffel.interception.command.Command
 import com.etiennelenhart.eiffel.interception.command.LiveCommand
 import com.etiennelenhart.eiffel.interception.command.LiveReaction
+import com.etiennelenhart.eiffel.interception.command.LiveReactionScope
 import com.etiennelenhart.eiffel.interception.command.Reaction
+import com.etiennelenhart.eiffel.interception.command.ReactionScope
 import com.etiennelenhart.eiffel.interception.command.command
 import com.etiennelenhart.eiffel.interception.command.consuming
 import com.etiennelenhart.eiffel.interception.command.forwarding
 import com.etiennelenhart.eiffel.interception.command.ignoring
 import com.etiennelenhart.eiffel.interception.command.liveCommand
-import com.etiennelenhart.eiffel.interception.command.liveConsuming
-import com.etiennelenhart.eiffel.interception.command.liveForwarding
-import com.etiennelenhart.eiffel.interception.command.liveIgnoring
 import com.etiennelenhart.eiffel.interception.filter
 import com.etiennelenhart.eiffel.interception.pipe
 import com.etiennelenhart.eiffel.state.Action
@@ -270,12 +269,13 @@ open class InterceptionBuilder<S : State, A : Action> {
      *
      * @see addAdapter
      * @param[T] Target [Action] to adapt on.
+     * @param[R] Adapted [Action].
      * @param[debugName] Name to use when logging is enabled with [Eiffel.debugMode].
      * @param[adapt] Lambda expression that adapts the given [Action] to a new one.
      */
-    inline fun <reified T : A> addAdapterOn(
+    inline fun <reified T : A, R : A> addAdapterOn(
         debugName: String = "",
-        crossinline adapt: (action: T) -> T
+        crossinline adapt: (action: T) -> R
     ) = addAdapter(debugName) { action -> if (action is T) adapt(action) else action }
 
     /**
@@ -283,11 +283,13 @@ open class InterceptionBuilder<S : State, A : Action> {
      *
      * @see Command
      * @param[debugName] Name to use when logging is enabled with [Eiffel.debugMode].
-     * @param[react] Lambda expression called with the received [Action]. Return either [Reaction.Consuming] or [Reaction.Ignoring].
+     * @param[react] Lambda expression called with the received [Action]. Use one of [ReactionScope.consuming], [ReactionScope.forwarding]
+     * or [ReactionScope.ignoring]. (see [Command.react])
      */
-    fun addCommand(debugName: String = "", react: (action: A) -> Reaction<S, A>) = add {
-        command(debugName, react)
-    }
+    fun addCommand(
+        debugName: String = "",
+        react: ReactionScope.(action: A) -> Reaction<S, A>
+    ) = add { command(debugName, react) }
 
     /**
      * Similar to [addCommand] except it targets a single [Action] of type [T].
@@ -388,9 +390,10 @@ open class InterceptionBuilder<S : State, A : Action> {
      * @param[debugName] Name to use when logging is enabled with [Eiffel.debugMode].
      * @param[react] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
      */
-    fun addLiveCommand(debugName: String = "", react: (action: A) -> LiveReaction<S, A>) = add {
-        liveCommand(debugName, react)
-    }
+    fun addLiveCommand(
+        debugName: String = "",
+        react: LiveReactionScope.(action: A) -> LiveReaction<S, A>
+    ) = add { liveCommand(debugName, react) }
 
     /**
      * Similar to [addLiveCommand] except it targets a single [Action] of type [T].
@@ -408,9 +411,9 @@ open class InterceptionBuilder<S : State, A : Action> {
         noinline block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>
     ) = addLiveCommand(debugName) { action ->
         when {
-            action !is T -> liveIgnoring()
-            immediateAction == null -> liveForwarding(block)
-            else -> liveConsuming(immediateAction, block)
+            action !is T -> ignoring()
+            immediateAction == null -> forwarding(block)
+            else -> consuming(immediateAction, block)
         }
     }
 
