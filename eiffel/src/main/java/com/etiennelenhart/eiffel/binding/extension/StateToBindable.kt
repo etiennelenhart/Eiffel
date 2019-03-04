@@ -7,7 +7,7 @@ import com.etiennelenhart.eiffel.binding.BindableState
 import com.etiennelenhart.eiffel.state.State
 
 /**
- * Used to map this state to a bindable one that may be used as a binding variable.
+ * Used to map this state to a bindable one that may be used as a binding variable. Automatically calls default constructor of [B] for initial state.
  *
  * Example:
  * ```
@@ -31,9 +31,9 @@ import com.etiennelenhart.eiffel.state.State
  * @param[mapping] [BindableMapping] that maps this state to a bindable one.
  * @return A [LiveData] with values of type [B].
  */
-fun <S : State, B : BindableState> LiveData<S>.toBindable(mapping: BindableMapping<S, B>): LiveData<B> {
+inline fun <S : State, reified B : BindableState> LiveData<S>.toBindable(mapping: BindableMapping<S, B>): LiveData<B> {
     return MediatorLiveData<B>().apply {
-        value = mapping.initialState
+        value = B::class.java.newInstance()
         addSource(this@toBindable) { value = mapping(it, value!!) }
     }
 }

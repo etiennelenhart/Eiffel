@@ -20,6 +20,7 @@ import kotlin.reflect.KProperty
  * @param[viewModelClass] Java class of the provided view model.
  * @param[factory] Lambda expression to lazily get the factory to instantiate the view model.
  */
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel.")
 class ProvidedFactoryViewModel<out T : ViewModel>(
     private val viewModelClass: Class<T>,
     private val factory: () -> ViewModelProvider.Factory
@@ -44,5 +45,7 @@ class ProvidedFactoryViewModel<out T : ViewModel>(
  * @param[T] Type of the provided view model.
  * @param[factory] Lambda expression to lazily get the factory to instantiate the view model.
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Will be removed in next major version, try migrating to EiffelViewModel.")
 inline fun <reified T : ViewModel> FragmentActivity.providedViewModel(noinline factory: () -> ViewModelProvider.Factory) =
     ProvidedFactoryViewModel(T::class.java, factory)

@@ -11,8 +11,8 @@ class BindableMappingTest {
     data class BindableTestState(val emptyStateVisible: Boolean = false) : BindableState
 
     @Test
-    fun `GIVEN BindableMapping with 'initialState' WHEN invoked with current value THEN current value is transformed with 'map'`() {
-        val mapping = bindableMapping<TestState, BindableTestState>(BindableTestState()) { state ->
+    fun `GIVEN BindableMapping WHEN invoked with current value THEN current value is transformed with 'map'`() {
+        val mapping = bindableMapping<TestState, BindableTestState> { state ->
             copy(emptyStateVisible = this.emptyStateVisible && state.count == 0)
         }
 
