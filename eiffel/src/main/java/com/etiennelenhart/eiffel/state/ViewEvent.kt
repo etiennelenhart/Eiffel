@@ -21,7 +21,7 @@ package com.etiennelenhart.eiffel.state
  * Observers can then check for unhandled events like this:
  *
  * ```
- * viewModel.observeState(this) { state ->
+ * viewModel.state.observe(this) { state ->
  *     state.event?.peek {
  *         when (it) {
  *             is SampleViewEvent.ShowSample -> {

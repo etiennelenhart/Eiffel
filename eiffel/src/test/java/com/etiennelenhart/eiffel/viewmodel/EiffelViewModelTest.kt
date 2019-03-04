@@ -4,11 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import com.etiennelenhart.eiffel.interception.Interception
 import com.etiennelenhart.eiffel.interception.Next
-import com.etiennelenhart.eiffel.state.Action
-import com.etiennelenhart.eiffel.state.State
-import com.etiennelenhart.eiffel.state.ViewEvent
-import com.etiennelenhart.eiffel.state.peek
-import com.etiennelenhart.eiffel.state.update
+import com.etiennelenhart.eiffel.state.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,7 +35,7 @@ class EiffelViewModelTest {
         object Increment : TestAction()
         object Decrement : TestAction()
         class Add(val amount: Int) : TestAction()
-        object Other : TestAction()
+        object Dummy : TestAction()
     }
 
     val testStateUpdate = update<TestState, TestAction> { action ->
@@ -47,7 +43,7 @@ class EiffelViewModelTest {
             TestAction.Increment -> copy(count = count + 1)
             TestAction.Decrement -> copy(count = count - 1)
             is TestAction.Add -> copy(count = count + action.amount)
-            TestAction.Other -> copy(other = "changed")
+            else -> null
         }
     }
 
@@ -81,6 +77,22 @@ class EiffelViewModelTest {
         viewModel.dispatch(TestAction.Increment)
         viewModel.dispatch(TestAction.Increment)
         viewModel.dispatch(TestAction.Decrement)
+
+        assertEquals(1, actual)
+    }
+
+    @Test
+    fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called with non-updating 'action' THEN state is not emitted`() {
+        @UseExperimental(ExperimentalCoroutinesApi::class)
+        val viewModel =
+            object : EiffelViewModel<TestState, TestAction>(TestState(), Dispatchers.Unconfined) {
+                override val update = testStateUpdate
+                override val interceptionDispatcher = Dispatchers.Unconfined
+            }
+
+        var actual = 0
+        viewModel.state.observeForever { actual++ }
+        viewModel.dispatch(TestAction.Dummy)
 
         assertEquals(1, actual)
     }
