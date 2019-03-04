@@ -28,9 +28,12 @@ inline fun <reified V : ViewModel> EiffelFragment.eiffelViewModel(
  * @param[A] Type of [EiffelArguments] to pass to the [factory].
  * @param[factory] Lambda expression returning the [EiffelArgumentFactory] used to instantiate the view model.
  */
-inline fun <reified V : ViewModel, A : EiffelArguments> EiffelFragment.eiffelViewModel(
+inline fun <reified V : ViewModel, reified A : EiffelArguments> EiffelFragment.argsEiffelViewModel(
     noinline factory: () -> EiffelArgumentFactory<A>
-) = EiffelViewModelLazy(V::class, { this }, { factory().apply { arguments = getEiffelArguments() } })
+): EiffelViewModelLazy<V> {
+    val errorMessage = { "${this::class.java.simpleName} doesn't provide expected ${A::class.java.simpleName} to ${factory()::class.java.simpleName}" }
+    return EiffelViewModelLazy(V::class, { this }, { factory().apply { arguments = getEiffelArguments() ?: throw IllegalArgumentException(errorMessage()) } })
+}
 
 /**
  * Delegate to lazily initialize an [EiffelViewModel] scoped to the Activity associated with this [EiffelFragment].

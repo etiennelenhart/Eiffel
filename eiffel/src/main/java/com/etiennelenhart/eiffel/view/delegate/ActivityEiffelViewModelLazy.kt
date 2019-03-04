@@ -25,7 +25,7 @@ inline fun <reified V : ViewModel> EiffelActivity.eiffelViewModel(
  * @param[eiffelArguments] Lambda expression returning the [EiffelArguments] that should be passed to the [factory].
  * @param[factory] Lambda expression returning the [EiffelArgumentFactory] used to instantiate the view model.
  */
-inline fun <reified V : ViewModel, A : EiffelArguments> EiffelActivity.eiffelViewModel(
+inline fun <reified V : ViewModel, A : EiffelArguments> EiffelActivity.argsEiffelViewModel(
     noinline eiffelArguments: () -> A,
     noinline factory: () -> EiffelArgumentFactory<A>
 ) = EiffelViewModelLazy(V::class, { this }, { factory().apply { arguments = eiffelArguments() } })
