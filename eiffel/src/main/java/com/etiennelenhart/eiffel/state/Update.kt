@@ -11,6 +11,7 @@ package com.etiennelenhart.eiffel.state
  *    override fun SampleState.perform(action: SampleAction): SampleState = when (action) {
  *        SampleAction.Loading -> copy(isLoading = true)
  *        SampleAction.Loaded -> copy(isLoading = false, data = action.data)
+ *        else -> null
  *    }
  * }
  * ```
@@ -25,18 +26,18 @@ abstract class Update<S : State, A : Action> {
      *
      * @receiver[S] Current [State].
      * @param[action] Dispatched [Action].
-     * @return The update [State]
+     * @return The updated [State] or `null` if no update has been made.
      */
-    abstract fun S.perform(action: A): S
+    abstract fun S.perform(action: A): S?
 
     /**
-     * Update the provided [state] using [perform] according to the given [action].
+     * Updates the provided [state] using [perform] according to the given [action].
      *
      * @param[state] Current [State].
      * @param[action] Dispatched [Action].
-     * @return The updated [State].
+     * @return The updated [State] or `null` if no update has been made.
      */
-    operator fun invoke(state: S, action: A): S = state.perform(action)
+    operator fun invoke(state: S, action: A): S? = state.perform(action)
 }
 
 /**
@@ -49,15 +50,17 @@ abstract class Update<S : State, A : Action> {
  *   when (action) {
  *      is SampleAction.Loading -> copy(isLoading = true)
  *      is SampleAction.Loaded -> copy(isLoading = false, data = action.data)
+ *      else -> null
  *   }
  * }
  * ```
  *
- * @param[perform] Lambda expression called scoped to the current [State] and dispatched [Action]. Return the updated [State].
+ * @param[perform] Lambda expression called scoped to the current [State] and dispatched [Action]. Return the updated [State]
+ * or `null` if no update has been made.
  * @return An object implementing [Update].
  */
-fun <S : State, A : Action> update(perform: S.(action: A) -> S): Update<S, A> {
+fun <S : State, A : Action> update(perform: S.(action: A) -> S?): Update<S, A> {
     return object : Update<S, A>() {
-        override fun S.perform(action: A): S = perform(action)
+        override fun S.perform(action: A): S? = perform(action)
     }
 }
