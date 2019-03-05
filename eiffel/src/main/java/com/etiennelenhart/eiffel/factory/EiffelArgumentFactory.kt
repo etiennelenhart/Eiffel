@@ -1,18 +1,17 @@
 package com.etiennelenhart.eiffel.factory
 
 import com.etiennelenhart.eiffel.view.EiffelActivity
-import com.etiennelenhart.eiffel.view.EiffelArguments
 import com.etiennelenhart.eiffel.view.EiffelFragment
 
 /**
- * Base class for an [EiffelFactory] which provides [EiffelArguments] that may be injected when creating the view model.
+ * Base class for an [EiffelFactory] which provides arguments that may be injected when creating the view model.
  *
- * @param[A] Type of [EiffelArguments] to provide.
+ * @param[A] Type of arguments to provide.
  */
-abstract class EiffelArgumentFactory<A : EiffelArguments> : EiffelFactory {
+abstract class EiffelArgumentFactory<A : Any> : EiffelFactory {
 
     /**
-     * Provided [EiffelArguments]. Automatically set when used in corresponding view model delegates of [EiffelActivity] and [EiffelFragment].
+     * Provided arguments. Automatically set when used in corresponding view model delegates of [EiffelActivity] and [EiffelFragment].
      */
     lateinit var arguments: A
 }
