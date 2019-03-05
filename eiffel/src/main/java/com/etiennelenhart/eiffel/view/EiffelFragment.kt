@@ -1,6 +1,7 @@
 package com.etiennelenhart.eiffel.view
 
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.fragment.app.Fragment
 import com.etiennelenhart.eiffel.factory.EiffelArgumentFactory
 
@@ -10,15 +11,26 @@ import com.etiennelenhart.eiffel.factory.EiffelArgumentFactory
 abstract class EiffelFragment : Fragment() {
 
     /**
-     * Used internally to get [EiffelArguments] set with [setEiffelArguments].
+     * Used internally to get arguments set with [setEiffelArguments].
      */
-    fun <A : EiffelArguments> getEiffelArguments() = arguments?.getParcelable<A>(ARG_EIFFEL)
+    fun getEiffelArguments() = arguments?.get(ARG_EIFFEL)
 
     /**
-     * Adds provided [args] to this fragment's arguments that can be used for [EiffelArgumentFactory].
+     * Adds provided [arguments] to this Fragment's arguments that can be used for [EiffelArgumentFactory].
+     *
+     * Tip: Try using [Kotlin Android Extensions](https://kotlinlang.org/docs/tutorials/android-plugin.html#parcelable) to gain `@Parcelize` annotation.
+     *
+     * Example:
+     * ```
+     * @Parcelize
+     * class SampleArguments(val id: String) : Parcelable
+     * ```
+     *
+     * @param[A] Type of parcelable arguments.
+     * @param[arguments] Arguments to add.
      */
-    fun <A : EiffelArguments> setEiffelArguments(args: A) {
-        arguments = (arguments ?: Bundle()).apply { putParcelable(ARG_EIFFEL, args) }
+    fun <A : Parcelable> setEiffelArguments(arguments: A) {
+        this.arguments = (this.arguments ?: Bundle()).apply { putParcelable(ARG_EIFFEL, arguments) }
     }
 
     private companion object {
