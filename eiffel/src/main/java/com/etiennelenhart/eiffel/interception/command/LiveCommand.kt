@@ -86,8 +86,3 @@ fun <S : State, A : Action> liveCommand(
         override fun react(action: A) = LiveReactionScope.react(action)
     }
 }
-
-/**
- * Only used to scope [LiveReaction] builder functions.
- */
-object LiveReactionScope

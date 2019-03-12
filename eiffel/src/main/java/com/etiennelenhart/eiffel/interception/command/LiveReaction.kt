@@ -49,32 +49,38 @@ sealed class LiveReaction<S : State, A : Action> {
 }
 
 /**
- * Convenience builder function for the [Consuming] variant of [LiveReaction].
- *
- * @param[S] Type of [State] to receive.
- * @param[A] Type of [Action] to immediately return and continuously send.
- * @param[immediateAction] [Action] to return immediately so state updating is not interrupted, e.g. indicating a 'pending' operation.
- * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
- * @return Instance of [Consuming] variant.
+ * Scope for [LiveReaction] builder functions.
  */
-fun <S : State, A : Action> LiveReactionScope.consuming(immediateAction: A, block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) =
-    LiveReaction.Consuming(immediateAction, block)
+object LiveReactionScope {
 
-/**
- * Convenience builder function for the [Forwarding] variant of [LiveReaction].
- *
- * @param[S] Type of [State] to receive.
- * @param[A] Type of [Action] to react to and continuously send.
- * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
- * @return Instance of [Forwarding] variant.
- */
-fun <S : State, A : Action> LiveReactionScope.forwarding(block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) = LiveReaction.Forwarding(block)
+    /**
+     * Convenience builder function for the [Consuming] variant of [LiveReaction].
+     *
+     * @param[S] Type of [State] to receive.
+     * @param[A] Type of [Action] to immediately return and continuously send.
+     * @param[immediateAction] [Action] to return immediately so state updating is not interrupted, e.g. indicating a 'pending' operation.
+     * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
+     * @return Instance of [Consuming] variant.
+     */
+    fun <S : State, A : Action> consuming(immediateAction: A, block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) =
+        LiveReaction.Consuming(immediateAction, block)
 
-/**
- * Convenience builder function for the [Ignoring] variant of [LiveReaction].
- *
- * @param[S] Type of [State] to receive if consuming.
- * @param[A] Type of [Action] to react to.
- * @return Instance of [Ignoring] variant.
- */
-fun <S : State, A : Action> LiveReactionScope.ignoring() = LiveReaction.Ignoring<S, A>()
+    /**
+     * Convenience builder function for the [Forwarding] variant of [LiveReaction].
+     *
+     * @param[S] Type of [State] to receive.
+     * @param[A] Type of [Action] to react to and continuously send.
+     * @param[block] Suspending lambda expression returning a [Channel] to receive from. To update state call [Channel.send] on this channel.
+     * @return Instance of [Forwarding] variant.
+     */
+    fun <S : State, A : Action> forwarding(block: suspend CoroutineScope.(state: S) -> ReceiveChannel<A>) = LiveReaction.Forwarding(block)
+
+    /**
+     * Convenience builder function for the [Ignoring] variant of [LiveReaction].
+     *
+     * @param[S] Type of [State] to receive if consuming.
+     * @param[A] Type of [Action] to react to.
+     * @return Instance of [Ignoring] variant.
+     */
+    fun <S : State, A : Action> ignoring() = LiveReaction.Ignoring<S, A>()
+}

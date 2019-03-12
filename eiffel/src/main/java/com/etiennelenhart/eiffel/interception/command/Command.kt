@@ -71,8 +71,3 @@ fun <S : State, A : Action> command(
         override fun react(action: A) = ReactionScope.react(action)
     }
 }
-
-/**
- * Only used to scope [Reaction] builder functions.
- */
-object ReactionScope
