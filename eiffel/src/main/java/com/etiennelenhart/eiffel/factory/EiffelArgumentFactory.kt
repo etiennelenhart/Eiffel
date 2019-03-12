@@ -12,6 +12,8 @@ abstract class EiffelArgumentFactory<A : Any> : EiffelFactory {
 
     /**
      * Provided arguments. Automatically set when used in corresponding view model delegates of [EiffelActivity] and [EiffelFragment].
+     *
+     * *Note: Can only be accessed after the factory's constructor.*
      */
     lateinit var arguments: A
 }

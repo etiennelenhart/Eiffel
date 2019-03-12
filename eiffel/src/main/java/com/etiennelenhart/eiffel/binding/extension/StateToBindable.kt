@@ -100,7 +100,7 @@ fun <S1 : State, S2 : State, S3 : State> EiffelFragment.bindableStateSource(firs
  *     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
  *         val binding = DataBindingUtil.inflate<FragmentSampleBinding>(inflater, R.layout.fragment_sample, container, false)
  *         binding.view = this
- *         binding.setLifecycleOwner(viewLifecycleOwner)
+ *         binding.lifecycleOwner = viewLifecycleOwner
  *         return binding.root
  *     }
  * }
@@ -134,7 +134,7 @@ inline fun <S1 : State, S2 : State, reified B : BindableState> DoubleBindableSta
  *     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
  *         val binding = DataBindingUtil.inflate<FragmentSampleBinding>(inflater, R.layout.fragment_sample, container, false)
  *         binding.view = this
- *         binding.setLifecycleOwner(viewLifecycleOwner)
+ *         binding.lifecycleOwner = viewLifecycleOwner
  *         return binding.root
  *     }
  * }
