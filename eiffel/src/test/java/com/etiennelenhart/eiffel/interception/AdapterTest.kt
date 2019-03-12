@@ -17,7 +17,7 @@ class AdapterTest {
     @Test
     fun `GIVEN Adapter WHEN invoked with 'action' THEN adapted 'action' is forwarded`() = runBlocking {
         val expected = TestAction.Second
-        val adapter = adapter<TestState, TestAction> { expected }
+        val adapter = adapter<TestState, TestAction> { _, _ -> expected }
 
         val actual = adapter(this, TestState, TestAction.First, {}, { _, _, action, _ -> action })
 
