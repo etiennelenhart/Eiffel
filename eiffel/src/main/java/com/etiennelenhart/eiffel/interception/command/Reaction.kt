@@ -47,32 +47,38 @@ sealed class Reaction<S : State, A : Action> {
 }
 
 /**
- * Convenience builder function for the [Consuming] variant of [Reaction].
- *
- * @param[S] Type of [State] to receive.
- * @param[A] Type of [Action] to immediately return and dispatch asynchronously.
- * @param[immediateAction] [Action] to return immediately so state updating is not interrupted, e.g. indicating a 'pending' operation.
- * @param[block] Suspending lambda expression that is called asynchronously. To update state when done call provided `dispatch` lambda.
- * @return Instance of [Consuming] variant.
+ * Scope for [Reaction] builder functions.
  */
-fun <S : State, A : Action> ReactionScope.consuming(immediateAction: A, block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) =
-    Reaction.Consuming(immediateAction, block)
+object ReactionScope {
 
-/**
- * Convenience builder function for the [Forwarding] variant of [Reaction].
- *
- * @param[S] Type of [State] to receive.
- * @param[A] Type of [Action] to react to and dispatch asynchronously.
- * @param[block] Suspending lambda expression that is called asynchronously. To update state when done call provided `dispatch` lambda.
- * @return Instance of [Forwarding] variant.
- */
-fun <S : State, A : Action> ReactionScope.forwarding(block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) = Reaction.Forwarding(block)
+    /**
+     * Convenience builder function for the [Consuming] variant of [Reaction].
+     *
+     * @param[S] Type of [State] to receive.
+     * @param[A] Type of [Action] to immediately return and dispatch asynchronously.
+     * @param[immediateAction] [Action] to return immediately so state updating is not interrupted, e.g. indicating a 'pending' operation.
+     * @param[block] Suspending lambda expression that is called asynchronously. To update state when done call provided `dispatch` lambda.
+     * @return Instance of [Consuming] variant.
+     */
+    fun <S : State, A : Action> consuming(immediateAction: A, block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) =
+        Reaction.Consuming(immediateAction, block)
 
-/**
- * Convenience builder function for the [Ignoring] variant of [Reaction].
- *
- * @param[S] Type of [State] to receive if consuming.
- * @param[A] Type of [Action] to react to.
- * @return Instance of [Ignoring] variant.
- */
-fun <S : State, A : Action> ReactionScope.ignoring() = Reaction.Ignoring<S, A>()
+    /**
+     * Convenience builder function for the [Forwarding] variant of [Reaction].
+     *
+     * @param[S] Type of [State] to receive.
+     * @param[A] Type of [Action] to react to and dispatch asynchronously.
+     * @param[block] Suspending lambda expression that is called asynchronously. To update state when done call provided `dispatch` lambda.
+     * @return Instance of [Forwarding] variant.
+     */
+    fun <S : State, A : Action> forwarding(block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) = Reaction.Forwarding(block)
+
+    /**
+     * Convenience builder function for the [Ignoring] variant of [Reaction].
+     *
+     * @param[S] Type of [State] to receive if consuming.
+     * @param[A] Type of [Action] to react to.
+     * @return Instance of [Ignoring] variant.
+     */
+    fun <S : State, A : Action> ignoring() = Reaction.Ignoring<S, A>()
+}
