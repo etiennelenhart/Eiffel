@@ -21,10 +21,10 @@ class CommandTest {
     @Test
     fun `GIVEN Command with consuming 'react' WHEN invoked with 'action' THEN 'immediateAction' is returned`() = runBlocking {
         val expected = TestAction.Loading
-        val command = command<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(expected) { _, _ -> delay(20) }
-                else -> ignoring()
+        val command = Command<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> Reaction.Consuming(expected) { _, _ -> delay(20) }
+                else -> Reaction.Ignoring()
             }
         }
 
@@ -36,13 +36,13 @@ class CommandTest {
     @Test
     fun `GIVEN Command with consuming 'react' WHEN invoked with 'action' THEN 'dispatch' can be called in 'block'`() = runBlocking {
         val expected = TestAction.Add(1)
-        val command = command<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(TestAction.Loading) { _, dispatch ->
+        val command = Command<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> Reaction.Consuming(TestAction.Loading) { _, dispatch ->
                     delay(40)
                     dispatch(expected)
                 }
-                else -> ignoring()
+                else -> Reaction.Ignoring()
             }
         }
 
@@ -56,10 +56,10 @@ class CommandTest {
     @Test
     fun `GIVEN Command with forwarding 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
         val expected = TestAction.Loading
-        val command = command<TestState, TestAction> {
-            when (it) {
-                TestAction.Loading -> forwarding { _, _ -> delay(20) }
-                else -> ignoring()
+        val command = Command<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Loading -> Reaction.Forwarding { _, _ -> delay(20) }
+                else -> Reaction.Ignoring()
             }
         }
 
@@ -72,13 +72,13 @@ class CommandTest {
     @Test
     fun `GIVEN Command with forwarding 'react' WHEN invoked with 'action' THEN 'dispatch' can be called in 'block'`() = runBlocking {
         val expected = TestAction.Add(1)
-        val command = command<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> forwarding { _, dispatch ->
+        val command = Command<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> Reaction.Forwarding { _, dispatch ->
                     delay(40)
                     dispatch(expected)
                 }
-                else -> ignoring()
+                else -> Reaction.Ignoring()
             }
         }
 
@@ -92,10 +92,10 @@ class CommandTest {
     @Test
     fun `GIVEN Command with ignoring 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
         val expected = TestAction.Decrement
-        val command = command<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(TestAction.Loading) { _, _ -> delay(20) }
-                else -> ignoring()
+        val command = Command<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> Reaction.Consuming(TestAction.Loading) { _, _ -> delay(20) }
+                else -> Reaction.Ignoring()
             }
         }
 

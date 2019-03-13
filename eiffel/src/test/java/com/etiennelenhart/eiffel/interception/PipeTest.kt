@@ -17,7 +17,7 @@ class PipeTest {
     @Test
     fun `GIVEN Pipe WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
         val expected = TestAction.First
-        val pipe = pipe<TestState, TestAction>()
+        val pipe = Pipe<TestState, TestAction> { _, _ -> }
 
         val actual = pipe(this, TestState, expected, {}, { _, _, action, _ -> action })
 
@@ -27,7 +27,7 @@ class PipeTest {
     @Test
     fun `GIVEN Pipe WHEN invoked THEN 'before' is called before 'next'`() = runBlocking {
         var actual = ""
-        val pipe = pipe<TestState, TestAction>(before = { _, _ -> actual = "before" })
+        val pipe = Pipe<TestState, TestAction>(before = { _, _ -> actual = "before" })
 
         pipe(this, TestState, TestAction.First, {}, { _, _, action, _ -> if (actual.isEmpty()) actual = "next"; action })
 
@@ -37,7 +37,7 @@ class PipeTest {
     @Test
     fun `GIVEN Pipe WHEN invoked THEN 'after' is called after 'next'`() = runBlocking {
         var actual = ""
-        val pipe = pipe<TestState, TestAction>(after = { _, _ -> if (actual == "next") actual = "after" })
+        val pipe = Pipe<TestState, TestAction> { _, _ -> actual = "after" }
 
         pipe(this, TestState, TestAction.First, {}, { _, _, action, _ -> actual = "next"; action })
 
@@ -48,7 +48,7 @@ class PipeTest {
     fun `GIVEN Pipe WHEN invoked THEN 'before' is called with 'action'`() = runBlocking {
         val expected = TestAction.First
         var actual: TestAction? = null
-        val pipe = pipe<TestState, TestAction>(before = { _, action -> actual = action })
+        val pipe = Pipe<TestState, TestAction>(before = { _, action -> actual = action })
 
         pipe(this, TestState, expected, {}, { _, _, _, _ -> TestAction.Second })
 
@@ -59,7 +59,7 @@ class PipeTest {
     fun `GIVEN Pipe WHEN invoked THEN 'after' is called with action returned from 'next'`() = runBlocking {
         val expected = TestAction.Second
         var actual: TestAction? = null
-        val pipe = pipe<TestState, TestAction>(after = { _, action -> actual = action })
+        val pipe = Pipe<TestState, TestAction> { _, action -> actual = action }
 
         pipe(this, TestState, TestAction.First, {}, { _, _, _, _ -> expected })
 

@@ -3,6 +3,7 @@ package com.etiennelenhart.eiffel.viewmodel
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import com.etiennelenhart.eiffel.interception.Interception
+import com.etiennelenhart.eiffel.interception.Interceptions
 import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.*
 import kotlinx.coroutines.CoroutineScope
@@ -196,7 +197,7 @@ class EiffelViewModelTest {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState(), Dispatchers.Unconfined) {
             override val update = interceptionStateUpdate
-            override val interceptions = listOf(firstInterception, secondInterception)
+            override val interceptions = Interceptions(firstInterception, secondInterception)
             override val interceptionDispatcher = Dispatchers.Unconfined
         }
 
@@ -224,7 +225,7 @@ class EiffelViewModelTest {
         @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState(), Dispatchers.Unconfined) {
             override val update = interceptionStateUpdate
-            override val interceptions = listOf(blockingInterception, firstInterception, secondInterception)
+            override val interceptions = Interceptions(blockingInterception, firstInterception, secondInterception)
             override val interceptionDispatcher = Dispatchers.Unconfined
         }
 

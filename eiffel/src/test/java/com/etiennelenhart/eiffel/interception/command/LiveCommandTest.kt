@@ -24,10 +24,10 @@ class LiveCommandTest {
     @Test
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN 'immediateAction' is returned`() = runBlocking {
         val expected = TestAction.Loading
-        val command = liveCommand<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(expected) { produce { delay(20) } }
-                else -> ignoring()
+        val command = LiveCommand<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> LiveReaction.Consuming(expected) { produce { delay(20) } }
+                else -> LiveReaction.Ignoring()
             }
         }
 
@@ -39,16 +39,16 @@ class LiveCommandTest {
     @Test
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN calling 'send' on channel causes dispatch`() = runBlocking {
         val expected = TestAction.Add(1)
-        val command = liveCommand<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(TestAction.Loading) {
+        val command = LiveCommand<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) {
                     produce {
                         delay(40)
                         send(expected)
                         close()
                     }
                 }
-                else -> ignoring()
+                else -> LiveReaction.Ignoring()
             }
         }
 
@@ -61,9 +61,9 @@ class LiveCommandTest {
 
     @Test
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() = runBlocking {
-        val command = liveCommand<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(TestAction.Loading) {
+        val command = LiveCommand<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) {
                     produce {
                         send(TestAction.Add(1))
                         delay(40)
@@ -71,7 +71,7 @@ class LiveCommandTest {
                         close()
                     }
                 }
-                else -> ignoring()
+                else -> LiveReaction.Ignoring()
             }
         }
 
@@ -85,10 +85,10 @@ class LiveCommandTest {
     @Test
     fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
         val expected = TestAction.Loading
-        val command = liveCommand<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> forwarding { produce { delay(20) } }
-                else -> ignoring()
+        val command = LiveCommand<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> LiveReaction.Forwarding { produce { delay(20) } }
+                else -> LiveReaction.Ignoring()
             }
         }
 
@@ -101,16 +101,16 @@ class LiveCommandTest {
     @Test
     fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN calling 'send' on channel causes dispatch`() = runBlocking {
         val expected = TestAction.Add(1)
-        val command = liveCommand<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> forwarding {
+        val command = LiveCommand<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> LiveReaction.Forwarding {
                     produce {
                         delay(40)
                         send(expected)
                         close()
                     }
                 }
-                else -> ignoring()
+                else -> LiveReaction.Ignoring()
             }
         }
 
@@ -124,9 +124,9 @@ class LiveCommandTest {
     @Test
     fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() =
         runBlocking {
-            val command = liveCommand<TestState, TestAction> {
-                when (it) {
-                    TestAction.Increment -> forwarding {
+            val command = LiveCommand<TestState, TestAction> { action ->
+                when (action) {
+                    TestAction.Increment -> LiveReaction.Forwarding {
                         produce {
                             send(TestAction.Add(1))
                             delay(40)
@@ -134,7 +134,7 @@ class LiveCommandTest {
                             close()
                         }
                     }
-                    else -> ignoring()
+                    else -> LiveReaction.Ignoring()
                 }
             }
 
@@ -148,10 +148,10 @@ class LiveCommandTest {
     @Test
     fun `GIVEN LiveCommand with ignoring 'react' WHEN invoked with 'action' THEN 'action' is forwarded`() = runBlocking {
         val expected = TestAction.Decrement
-        val command = liveCommand<TestState, TestAction> {
-            when (it) {
-                TestAction.Increment -> consuming(TestAction.Loading) { produce { delay(40) } }
-                else -> ignoring()
+        val command = LiveCommand<TestState, TestAction> { action ->
+            when (action) {
+                TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) { produce { delay(40) } }
+                else -> LiveReaction.Ignoring()
             }
         }
 

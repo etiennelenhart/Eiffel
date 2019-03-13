@@ -10,6 +10,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import com.etiennelenhart.eiffel.Eiffel
 import com.etiennelenhart.eiffel.interception.Interception
+import com.etiennelenhart.eiffel.interception.Interceptions
 import com.etiennelenhart.eiffel.interception.Next
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
@@ -30,10 +31,7 @@ import kotlinx.coroutines.channels.consumeEach
  * @param[A] Type of supported [Action]s.
  * @param[initialState] Initial state to set when view model is created.
  */
-abstract class EiffelViewModel<S : State, A : Action> internal constructor(
-    initialState: S,
-    actionDispatcher: CoroutineDispatcher
-) : ViewModel() {
+abstract class EiffelViewModel<S : State, A : Action> internal constructor(initialState: S, actionDispatcher: CoroutineDispatcher) : ViewModel() {
 
     /**
      * Used to update the state according to an action.
@@ -43,7 +41,7 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
     /**
      * Chain of [Interception] objects to apply to a dispatched [Action].
      */
-    protected open val interceptions: List<Interception<S, A>> = emptyList()
+    protected open val interceptions: Interceptions<S, A> = Interceptions()
 
     /**
      * [CoroutineDispatcher] to use for interception invocation, defaults to [Dispatchers.IO].
