@@ -97,8 +97,9 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
          * }
          * ```
          */
-        inline fun <reified T : A> on(build: Interceptions.Builder.Targeted<S, A, T>.() -> Unit) =
+        inline fun <reified T : A> on(build: Interceptions.Builder.Targeted<S, A, T>.() -> Unit) = add(
             Interceptions.Builder.Targeted<S, A, T>(target = { it is T }).apply(build).build()
+        )
 
         /**
          * Builder class for a list of [Interception] instances targeted to a specific action.
