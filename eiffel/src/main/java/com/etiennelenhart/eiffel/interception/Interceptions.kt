@@ -157,6 +157,24 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
             }
 
             /**
+             * Creates a [Pipe] that only calls [before] for the targeted action.
+             *
+             * @see pipe
+             */
+            fun pipeBefore(debugName: String = "", before: (state: S, action: T) -> Unit) = apply {
+                pipe(debugName, before)
+            }
+
+            /**
+             * Creates a [Pipe] that only calls [after] for the targeted action.
+             *
+             * @see pipe
+             */
+            fun pipeAfter(debugName: String = "", after: (state: S, action: T) -> Unit) = apply {
+                pipe(debugName, after = after)
+            }
+
+            /**
              * Creates a consuming [Command] that only calls [block] for the targeted action.
              *
              * *Note: [block] is additionally called with targeted `action`.*
