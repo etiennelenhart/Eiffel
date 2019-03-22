@@ -170,7 +170,7 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
              *
              * @see pipe
              */
-            fun pipeAfter(debugName: String = "", after: (state: S, action: T?) -> Unit) = apply {
+            fun pipeAfter(debugName: String = "", after: (state: S, action: T) -> Unit) = apply {
                 pipe(debugName, after = after)
             }
 
