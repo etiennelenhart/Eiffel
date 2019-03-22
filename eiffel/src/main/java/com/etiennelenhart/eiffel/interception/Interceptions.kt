@@ -146,7 +146,7 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
              *
              * *Note: `action` in [before] and [after] is already cast to [T].*
              */
-            fun pipe(debugName: String = "", before: (state: S, action: T) -> Unit = { _, _ -> }, after: (state: S, action: A?) -> Unit) = apply {
+            fun pipe(debugName: String = "", before: (state: S, action: T) -> Unit = { _, _ -> }, after: (state: S, action: T) -> Unit = {_, _ ->}) = apply {
                 chain.add(
                     Pipe(
                         debugName,
