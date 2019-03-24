@@ -32,11 +32,7 @@ import kotlinx.coroutines.channels.consumeEach
  * @param[initialState] Initial state to set when view model is created.
  * @param[debugTag] Tag to use for debug logs concerning this view model, defaults to its simple name.
  */
-abstract class EiffelViewModel<S : State, A : Action> internal constructor(
-    initialState: S,
-    debugTag: String? = null,
-    actionDispatcher: CoroutineDispatcher
-) : ViewModel() {
+abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag: String? = null) : ViewModel() {
 
     /**
      * Used to update the state according to an action.
@@ -47,11 +43,6 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
      * Chain of [Interception] objects to apply to a dispatched [Action].
      */
     protected open val interceptions: Interceptions<S, A> = Interceptions()
-
-    /**
-     * [CoroutineDispatcher] to use for interception invocation, defaults to [Dispatchers.IO].
-     */
-    protected open val interceptionDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     /**
      * Set to `true` to exclude this ViewModel from [Eiffel.debugMode].
@@ -69,7 +60,7 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
-    private val dispatchActor = scope.actor<A>(actionDispatcher, Channel.UNLIMITED) {
+    private val dispatchActor = scope.actor<A>(Eiffel.actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach { action ->
             val currentState = _state.value!!
 
@@ -95,14 +86,12 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(
      */
     val state: LiveData<S> = _state
 
-    constructor(initialState: S, debugTag: String? = null) : this(initialState, debugTag, Dispatchers.Default)
-
     init {
         _state.value = initialState
         log { "* Creating $tag, initial state: $initialState" }
     }
 
-    private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
+    private suspend fun applyInterceptions(currentState: S, action: A) = withContext(Eiffel.interceptionDispatcher) {
         if (interceptions.isEmpty()) log { "├─ ↡ No interceptions to apply" }
         next(0).invoke(scope, currentState, action, ::dispatch)
     }
