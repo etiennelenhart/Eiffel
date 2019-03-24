@@ -30,8 +30,13 @@ import kotlinx.coroutines.channels.consumeEach
  * @param[S] Type of associated [State].
  * @param[A] Type of supported [Action]s.
  * @param[initialState] Initial state to set when view model is created.
+ * @param[debugTag] Tag to use for debug logs concerning this view model, defaults to its simple name.
  */
-abstract class EiffelViewModel<S : State, A : Action> internal constructor(initialState: S, actionDispatcher: CoroutineDispatcher) : ViewModel() {
+abstract class EiffelViewModel<S : State, A : Action> internal constructor(
+    initialState: S,
+    debugTag: String? = null,
+    actionDispatcher: CoroutineDispatcher
+) : ViewModel() {
 
     /**
      * Used to update the state according to an action.
@@ -60,6 +65,7 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(initi
      */
     protected open val excludeFromDebug: Boolean = false
 
+    private val tag: String = debugTag ?: this::class.java.simpleName
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
     private val _state = MediatorLiveData<S>()
     @UseExperimental(ObsoleteCoroutinesApi::class)
@@ -89,11 +95,11 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(initi
      */
     val state: LiveData<S> = _state
 
-    constructor(initialState: S) : this(initialState, Dispatchers.Default)
+    constructor(initialState: S, debugTag: String? = null) : this(initialState, debugTag, Dispatchers.Default)
 
     init {
         _state.value = initialState
-        log { "* Creating ${this::class.java.simpleName}, initial state: $initialState" }
+        log { "* Creating $tag, initial state: $initialState" }
     }
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(interceptionDispatcher) {
@@ -160,13 +166,13 @@ abstract class EiffelViewModel<S : State, A : Action> internal constructor(initi
     @CallSuper
     override fun onCleared() {
         super.onCleared()
-        log { "✝ Destroying ${this::class.java.simpleName}, canceling command scope" }
+        log { "✝ Destroying $tag, canceling command scope" }
         scope.cancel()
     }
 
     private inline fun log(message: () -> String) {
         if (Eiffel.debugConfig.enabled && !excludeFromDebug) {
-            Eiffel.debugConfig.logger.log(Log.DEBUG, this::class.java.simpleName, message())
+            Eiffel.debugConfig.logger.log(Log.DEBUG, tag, message())
         }
     }
 }
