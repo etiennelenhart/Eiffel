@@ -1,1 +1,1 @@
-include ':eiffel'
+include ':eiffel', ':eiffel-test'
