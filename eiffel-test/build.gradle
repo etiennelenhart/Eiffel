@@ -16,9 +16,8 @@ android {
         minSdkVersion 14
         targetSdkVersion 28
         buildToolsVersion "28.0.3"
-        versionCode 1
-        versionName "1.0.0"
-        setProperty("archivesBaseName", "eiffel-test-${android.defaultConfig.versionName}")
+        versionCode version_code
+        versionName version_name
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
