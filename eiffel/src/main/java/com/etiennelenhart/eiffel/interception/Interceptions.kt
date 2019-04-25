@@ -124,6 +124,16 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
             private val chain = mutableListOf<Interception<S, A>>()
 
             /**
+             * Adds the given [interceptions] to the chain.
+             */
+            fun add(vararg interceptions: Interception<S, A>) = add(interceptions.toList())
+
+            /**
+             * Adds the given [interceptions] to the chain.
+             */
+            fun add(interceptions: List<Interception<S, A>>) = apply { chain.addAll(interceptions) }
+
+            /**
              * Creates an [Adapter] that only calls [adapt] for the targeted action.
              *
              * *Note: `action` in [adapt] is already cast to [T].*
