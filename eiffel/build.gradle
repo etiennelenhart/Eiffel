@@ -11,11 +11,11 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion compile_sdk_version
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
-        buildToolsVersion "28.0.3"
+        minSdkVersion min_sdk_version
+        targetSdkVersion target_sdk_version
+        buildToolsVersion build_tools_version
         versionCode version_code
         versionName version_name
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
