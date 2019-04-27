@@ -5,9 +5,9 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.Transformations
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.util.distinctUntilChanged
+import com.etiennelenhart.eiffel.util.map
 
 /**
  * Used to observe a specific property of this state from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
@@ -19,9 +19,7 @@ import com.etiennelenhart.eiffel.util.distinctUntilChanged
  * @param[onChanged] Lambda expression that is called with an updated property value.
  */
 fun <S : State, P> LiveData<S>.observeProperty(owner: LifecycleOwner, propertyValue: (state: S) -> P, onChanged: (value: P) -> Unit) =
-    propertyLiveData(this, propertyValue).observe(owner, Observer(onChanged))
+    map(propertyValue).distinctUntilChanged().observe(owner, Observer(onChanged))
 
 internal fun <S : State, P> LiveData<S>.observePropertyForever(propertyValue: (state: S) -> P, onChanged: (value: P) -> Unit) =
-    propertyLiveData(this, propertyValue).observeForever(onChanged)
-
-private fun <S : State, P> propertyLiveData(state: LiveData<S>, value: (state: S) -> P) = Transformations.map(state, value).distinctUntilChanged()
+    map(propertyValue).distinctUntilChanged().observeForever(onChanged)
