@@ -3,7 +3,9 @@ package com.etiennelenhart.eiffel.binding
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.etiennelenhart.eiffel.state.State
+import com.etiennelenhart.eiffel.util.NonNullMediatorLiveData
 import com.etiennelenhart.eiffel.util.distinctUntilChanged
+import com.etiennelenhart.eiffel.util.nonNull
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -34,8 +36,7 @@ import kotlin.reflect.KProperty
  *     }
  * }
  * ```
- * *Note: Don't forget to call `binding.setLifecycleOwner(...)` to enable Data binding's LiveData support.
- * You also may have to use `safeUnbox()` in XML binding expressions.*
+ * *Note: Don't forget to call `binding.setLifecycleOwner(...)` to enable Data binding's LiveData support.*
  *`
  * @param[S] Type of primary received [State].
  * @param[state] The primary [EiffelViewModel] state to receive.
@@ -58,7 +59,7 @@ abstract class BindableState<S : State>(private val state: LiveData<S>) {
      * @param[initialValue] Initial value of the property.
      * @param[map] Lambda expression that should map the received state value to the desired property.
      */
-    protected fun <P> bindableProperty(initialValue: P, map: (state: S) -> P) = BindableProperty1(initialValue, state, map)
+    protected fun <P : Any> bindableProperty(initialValue: P, map: (state: S) -> P) = BindableProperty1(initialValue, state, map)
 
     /**
      * Convenience function for the [BindableProperty2] delegate to map two given states to a single property which can be referenced in binding expressions.
@@ -78,7 +79,7 @@ abstract class BindableState<S : State>(private val state: LiveData<S>) {
      * @param[secondaryState] Secondary [EiffelViewModel] state to map.
      * @param[map] Lambda expression that should map the received state values to the desired property.
      */
-    protected fun <S2 : State, P> bindableProperty(
+    protected fun <S2 : State, P : Any> bindableProperty(
         initialValue: P,
         secondaryState: LiveData<S2>,
         map: (primary: S, secondary: S2) -> P
@@ -110,7 +111,7 @@ abstract class BindableState<S : State>(private val state: LiveData<S>) {
      * @param[tertiaryState] Tertiary [EiffelViewModel] state to map.
      * @param[map] Lambda expression that should map the received state values to the desired property.
      */
-    protected fun <S2 : State, S3 : State, P> bindableProperty(
+    protected fun <S2 : State, S3 : State, P : Any> bindableProperty(
         initialValue: P,
         secondaryState: LiveData<S2>,
         tertiaryState: LiveData<S3>,
@@ -127,12 +128,16 @@ abstract class BindableState<S : State>(private val state: LiveData<S>) {
  * @param[state] The [EiffelViewModel] state to map.
  * @param[map] Lambda expression that should map the received state values to the desired property.
  */
-class BindableProperty1<S : State, P>(initialValue: P, state: LiveData<S>, map: (state: S) -> P) : ReadOnlyProperty<BindableState<S>, LiveData<P>> {
+class BindableProperty1<S : State, P : Any>(
+    initialValue: P,
+    state: LiveData<S>,
+    map: (state: S) -> P
+) : ReadOnlyProperty<BindableState<S>, NonNullMediatorLiveData<P>> {
 
-    private val _property = MediatorLiveData<P>().apply {
+    private val _property: NonNullMediatorLiveData<P> = MediatorLiveData<P>().apply {
         value = initialValue
         addSource(state) { value = map(it) }
-    }.distinctUntilChanged()
+    }.distinctUntilChanged().nonNull()
 
     override fun getValue(thisRef: BindableState<S>, property: KProperty<*>) = _property
 }
@@ -148,18 +153,18 @@ class BindableProperty1<S : State, P>(initialValue: P, state: LiveData<S>, map: 
  * @param[secondaryState] Secondary [EiffelViewModel] state to map.
  * @param[map] Lambda expression that should map the received state values to the desired property.
  */
-class BindableProperty2<S : State, S2 : State, P>(
+class BindableProperty2<S : State, S2 : State, P : Any>(
     initialValue: P,
     primaryState: LiveData<S>,
     secondaryState: LiveData<S2>,
     map: (primary: S, secondary: S2) -> P
-) : ReadOnlyProperty<BindableState<S>, LiveData<P>> {
+) : ReadOnlyProperty<BindableState<S>, NonNullMediatorLiveData<P>> {
 
-    private val _property = MediatorLiveData<P>().apply {
+    private val _property: NonNullMediatorLiveData<P> = MediatorLiveData<P>().apply {
         value = initialValue
         addSource(primaryState) { value = map(it, secondaryState.value!!) }
         addSource(secondaryState) { value = map(primaryState.value!!, it) }
-    }.distinctUntilChanged()
+    }.distinctUntilChanged().nonNull()
 
     override fun getValue(thisRef: BindableState<S>, property: KProperty<*>) = _property
 }
@@ -177,20 +182,20 @@ class BindableProperty2<S : State, S2 : State, P>(
  * @param[tertiaryState] Tertiary [EiffelViewModel] state to map.
  * @param[map] Lambda expression that should map the received state values to the desired property.
  */
-class BindableProperty3<S : State, S2 : State, S3 : State, P>(
+class BindableProperty3<S : State, S2 : State, S3 : State, P : Any>(
     initialValue: P,
     primaryState: LiveData<S>,
     secondaryState: LiveData<S2>,
     tertiaryState: LiveData<S3>,
     map: (primary: S, secondary: S2, tertiary: S3) -> P
-) : ReadOnlyProperty<BindableState<S>, LiveData<P>> {
+) : ReadOnlyProperty<BindableState<S>, NonNullMediatorLiveData<P>> {
 
-    private val _property = MediatorLiveData<P>().apply {
+    private val _property: NonNullMediatorLiveData<P> = MediatorLiveData<P>().apply {
         value = initialValue
         addSource(primaryState) { value = map(it, secondaryState.value!!, tertiaryState.value!!) }
         addSource(secondaryState) { value = map(primaryState.value!!, it, tertiaryState.value!!) }
         addSource(tertiaryState) { value = map(primaryState.value!!, secondaryState.value!!, it) }
-    }.distinctUntilChanged()
+    }.distinctUntilChanged().nonNull()
 
     override fun getValue(thisRef: BindableState<S>, property: KProperty<*>) = _property
 }
