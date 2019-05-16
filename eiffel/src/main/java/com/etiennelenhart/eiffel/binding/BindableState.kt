@@ -2,9 +2,9 @@ package com.etiennelenhart.eiffel.binding
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.distinctUntilChanged
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.util.NonNullMediatorLiveData
-import com.etiennelenhart.eiffel.util.distinctUntilChanged
 import com.etiennelenhart.eiffel.util.nonNull
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
 import kotlin.properties.ReadOnlyProperty
@@ -24,7 +24,7 @@ import kotlin.reflect.KProperty
  * ```
  * To use this state in the layout binding simply assign it to the respective variable:
  * ```
- * class SampleFragment : EiffelFragment() {
+ * class SampleFragment : Fragment() {
  *
  *     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
  *         val binding = DataBindingUtil.inflate<FragmentSampleBinding>(inflater, R.layout.fragment_sample, container, false)

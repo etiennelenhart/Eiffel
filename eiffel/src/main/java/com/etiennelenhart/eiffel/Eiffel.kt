@@ -1,11 +1,17 @@
 package com.etiennelenhart.eiffel
 
 import com.etiennelenhart.eiffel.logger.Logger
+import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
 object Eiffel {
+
+    /**
+     * Key for any arguments of an Activity or Fragment which should be passed to a matching secondary constructor of the corresponding view model's [State].
+     */
+    const val KEY_ARGS = "key_eiffel_arguments"
 
     internal var actionDispatcher: CoroutineDispatcher = Dispatchers.Default
         private set
