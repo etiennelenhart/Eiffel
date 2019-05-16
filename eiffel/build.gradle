@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.etiennelenhart'
@@ -41,8 +42,10 @@ dependencies {
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_test_version"
     testImplementation "androidx.arch.core:core-testing:$arch_core_testing_version"
 
-    api "androidx.lifecycle:lifecycle-extensions:2.0.0"
-    implementation "androidx.appcompat:appcompat:1.0.2"
+    api "androidx.lifecycle:lifecycle-extensions:2.1.0-beta01"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.1.0-beta01"
+    api "androidx.lifecycle:lifecycle-viewmodel-savedstate:1.0.0-alpha01"
+    api "androidx.appcompat:appcompat:1.1.0-alpha05"
 }
 
 task sources(type: Jar) {

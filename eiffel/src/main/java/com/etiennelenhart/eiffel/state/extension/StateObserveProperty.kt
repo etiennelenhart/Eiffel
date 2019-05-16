@@ -2,12 +2,8 @@ package com.etiennelenhart.eiffel.state.extension
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.lifecycle.*
 import com.etiennelenhart.eiffel.state.State
-import com.etiennelenhart.eiffel.util.distinctUntilChanged
-import com.etiennelenhart.eiffel.util.map
 
 /**
  * Used to observe a specific property of this state from a [LifecycleOwner] like [FragmentActivity] or [Fragment].
