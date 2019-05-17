@@ -15,10 +15,10 @@ import kotlinx.coroutines.*
  * * [Reaction.Consuming] - Immediately returns its `immediateAction` and passes the `action` to its suspending `block`.
  * * [Reaction.Forwarding] - Similar to `Consuming` but forwards the `action` instead of returning it.
  *
- * The suspending `block` is called asynchronously and not awaited. To update state from the `block` call the provided `dispatch` lambda expression.
- * The block is scoped to the corresponding [EiffelViewModel]'s [CoroutineScope], so it will be cancelled when [EiffelViewModel.onCleared] is called
- * during execution. Since cancellation is cooperative with coroutines, if the side effect wants to support it either use a [coroutineScope] builder
- * and check for [isActive] or use [yield].
+ * The suspending `block` is called asynchronously. To update state from the `block` call the provided `dispatch` lambda expression. The block is scoped to
+ * the corresponding [EiffelViewModel]'s [CoroutineScope], so it will be cancelled when [EiffelViewModel.onCleared] is called during execution. Since
+ * cancellation is cooperative in Coroutines, if the side effect wants to support it either use a [coroutineScope] builder and check for [isActive] or
+ * use [yield].
  *
  * @param[S] Type of [State] to receive.
  * @param[A] Type of supported [Action].

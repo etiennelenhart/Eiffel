@@ -60,8 +60,7 @@ object ReactionScope {
      * @param[block] Suspending lambda expression that is called asynchronously. To update state when done call provided `dispatch` lambda.
      * @return Instance of [Consuming] variant.
      */
-    fun <S : State, A : Action> consuming(immediateAction: A, block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) =
-        Reaction.Consuming(immediateAction, block)
+    fun <S : State, A : Action> consuming(immediateAction: A, block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) = Consuming(immediateAction, block)
 
     /**
      * Convenience builder function for the [Forwarding] variant of [Reaction].
@@ -71,7 +70,7 @@ object ReactionScope {
      * @param[block] Suspending lambda expression that is called asynchronously. To update state when done call provided `dispatch` lambda.
      * @return Instance of [Forwarding] variant.
      */
-    fun <S : State, A : Action> forwarding(block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) = Reaction.Forwarding(block)
+    fun <S : State, A : Action> forwarding(block: suspend (state: S, dispatch: (A) -> Unit) -> Unit) = Forwarding(block)
 
     /**
      * Convenience builder function for the [Ignoring] variant of [Reaction].
@@ -80,5 +79,5 @@ object ReactionScope {
      * @param[A] Type of [Action] to react to.
      * @return Instance of [Ignoring] variant.
      */
-    fun <S : State, A : Action> ignoring() = Reaction.Ignoring<S, A>()
+    fun <S : State, A : Action> ignoring() = Ignoring<S, A>()
 }

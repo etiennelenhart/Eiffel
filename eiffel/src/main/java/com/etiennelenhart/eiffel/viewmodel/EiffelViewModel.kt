@@ -55,7 +55,7 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
 
     private val tag: String = debugTag ?: this::class.java.simpleName
 
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob())
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Eiffel.interceptionDispatcher)
     private val _state = MediatorLiveData<S>()
 
     internal var saveState: (bundle: Bundle) -> Unit = {}

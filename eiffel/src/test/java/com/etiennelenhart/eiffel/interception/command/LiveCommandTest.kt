@@ -2,14 +2,15 @@ package com.etiennelenhart.eiffel.interception.command
 
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import kotlin.test.assertEquals
 
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@UseExperimental(FlowPreview::class)
 class LiveCommandTest {
 
     object TestState : State
@@ -26,7 +27,7 @@ class LiveCommandTest {
         val expected = TestAction.Loading
         val command = LiveCommand<TestState, TestAction> { action ->
             when (action) {
-                TestAction.Increment -> LiveReaction.Consuming(expected) { produce { delay(20) } }
+                TestAction.Increment -> LiveReaction.Consuming(expected) { emptyFlow() }
                 else -> LiveReaction.Ignoring()
             }
         }
@@ -38,14 +39,15 @@ class LiveCommandTest {
 
     @Test
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN calling 'send' on channel causes dispatch`() = runBlocking {
+        val emitted = CompletableDeferred<Unit>()
+
         val expected = TestAction.Add(1)
         val command = LiveCommand<TestState, TestAction> { action ->
             when (action) {
                 TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) {
-                    produce {
-                        delay(40)
-                        send(expected)
-                        close()
+                    flow {
+                        emit(expected)
+                        emitted.complete(Unit)
                     }
                 }
                 else -> LiveReaction.Ignoring()
@@ -55,20 +57,21 @@ class LiveCommandTest {
         var actual: TestAction? = null
         command(this, TestState, TestAction.Increment, { actual = it }, { _, _, _, _ -> TestAction.Dummy })
 
-        delay(80)
+        emitted.await()
         assertEquals(expected, actual)
     }
 
     @Test
     fun `GIVEN LiveCommand with consuming 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() = runBlocking {
+        val emitted = CompletableDeferred<Unit>()
+
         val command = LiveCommand<TestState, TestAction> { action ->
             when (action) {
                 TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) {
-                    produce {
-                        send(TestAction.Add(1))
-                        delay(40)
-                        send(TestAction.Add(1))
-                        close()
+                    flow {
+                        emit(TestAction.Add(1))
+                        emit(TestAction.Add(1))
+                        emitted.complete(Unit)
                     }
                 }
                 else -> LiveReaction.Ignoring()
@@ -78,7 +81,7 @@ class LiveCommandTest {
         var actual = 0
         command(this, TestState, TestAction.Increment, { actual++ }, { _, _, _, _ -> TestAction.Dummy })
 
-        delay(80)
+        emitted.await()
         assertEquals(2, actual)
     }
 
@@ -87,7 +90,7 @@ class LiveCommandTest {
         val expected = TestAction.Loading
         val command = LiveCommand<TestState, TestAction> { action ->
             when (action) {
-                TestAction.Increment -> LiveReaction.Forwarding { produce { delay(20) } }
+                TestAction.Increment -> LiveReaction.Forwarding { emptyFlow() }
                 else -> LiveReaction.Ignoring()
             }
         }
@@ -100,14 +103,15 @@ class LiveCommandTest {
 
     @Test
     fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN calling 'send' on channel causes dispatch`() = runBlocking {
+        val emitted = CompletableDeferred<Unit>()
+
         val expected = TestAction.Add(1)
         val command = LiveCommand<TestState, TestAction> { action ->
             when (action) {
                 TestAction.Increment -> LiveReaction.Forwarding {
-                    produce {
-                        delay(40)
-                        send(expected)
-                        close()
+                    flow {
+                        emit(expected)
+                        emitted.complete(Unit)
                     }
                 }
                 else -> LiveReaction.Ignoring()
@@ -117,21 +121,22 @@ class LiveCommandTest {
         var actual: TestAction? = null
         command(this, TestState, TestAction.Increment, { actual = it }, { _, _, _, _ -> TestAction.Dummy })
 
-        delay(80)
+        emitted.await()
         assertEquals(expected, actual)
     }
 
     @Test
     fun `GIVEN LiveCommand with forwarding 'react' WHEN invoked with 'action' THEN multiple 'send' calls on channel cause multiples dispatches`() =
         runBlocking {
+            val emitted = CompletableDeferred<Unit>()
+
             val command = LiveCommand<TestState, TestAction> { action ->
                 when (action) {
                     TestAction.Increment -> LiveReaction.Forwarding {
-                        produce {
-                            send(TestAction.Add(1))
-                            delay(40)
-                            send(TestAction.Add(1))
-                            close()
+                        flow {
+                            emit(TestAction.Add(1))
+                            emit(TestAction.Add(1))
+                            emitted.complete(Unit)
                         }
                     }
                     else -> LiveReaction.Ignoring()
@@ -141,7 +146,7 @@ class LiveCommandTest {
             var actual = 0
             command(this, TestState, TestAction.Increment, { actual++ }, { _, _, _, _ -> TestAction.Dummy })
 
-            delay(80)
+            emitted.await()
             assertEquals(2, actual)
         }
 
@@ -150,14 +155,13 @@ class LiveCommandTest {
         val expected = TestAction.Decrement
         val command = LiveCommand<TestState, TestAction> { action ->
             when (action) {
-                TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) { produce { delay(40) } }
+                TestAction.Increment -> LiveReaction.Consuming(TestAction.Loading) { emptyFlow() }
                 else -> LiveReaction.Ignoring()
             }
         }
 
         val actual = command(this, TestState, expected, { }, { _, _, action, _ -> action })
 
-        delay(80)
         assertEquals(expected, actual)
     }
 }
