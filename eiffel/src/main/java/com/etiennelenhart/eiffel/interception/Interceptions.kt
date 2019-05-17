@@ -4,8 +4,8 @@ import com.etiennelenhart.eiffel.interception.command.*
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 
 @DslMarker
 annotation class InterceptionsBuilderMarker
@@ -19,6 +19,7 @@ annotation class InterceptionsBuilderMarker
  * @param[A] Type of supported [Action].
  * @param[chain] List of [Interception] instances.
  */
+@UseExperimental(FlowPreview::class)
 class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : List<Interception<S, A>> by chain {
 
     constructor(vararg items: Interception<S, A>) : this(items.toList())
@@ -97,9 +98,7 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
          * }
          * ```
          */
-        inline fun <reified T : A> on(build: Interceptions.Builder.Targeted<S, A, T>.() -> Unit) = add(
-            Interceptions.Builder.Targeted<S, A, T>(target = { it is T }).apply(build).build()
-        )
+        inline fun <reified T : A> on(build: Targeted<S, A, T>.() -> Unit) = add(Targeted<S, A, T>(target = { it is T }).apply(build).build())
 
         /**
          * Builder class for a list of [Interception] instances targeted to a specific action.
@@ -146,7 +145,7 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
              *
              * *Note: `action` in [before] and [after] is already cast to [T].*
              */
-            fun pipe(debugName: String = "", before: (state: S, action: T) -> Unit = { _, _ -> }, after: (state: S, action: T) -> Unit = {_, _ ->}) = apply {
+            fun pipe(debugName: String = "", before: (state: S, action: T) -> Unit = { _, _ -> }, after: (state: S, action: T) -> Unit = { _, _ -> }) = apply {
                 chain.add(
                     Pipe(
                         debugName,
@@ -205,35 +204,31 @@ class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : Li
             }
 
             /**
-             * Creates a consuming [LiveCommand] that only calls [block] for the targeted action.
+             * Creates a consuming [LiveCommand] that only calls [flow] for the targeted action.
              *
-             * *Note: [block] is additionally called with targeted `action`.*
+             * *Note: [flow] is additionally called with targeted `action`.*
              *
              * @see[LiveReaction.Consuming]
              */
-            fun consumingLiveCommand(
-                debugName: String = "",
-                immediateAction: A,
-                block: suspend CoroutineScope.(state: S, action: T) -> ReceiveChannel<A>
-            ) = apply {
+            fun consumingLiveCommand(debugName: String = "", immediateAction: A, flow: (state: S, action: T) -> Flow<A>) = apply {
                 chain.add(
                     LiveCommand(debugName) { action ->
-                        if (target(action)) consuming(immediateAction) { state -> block(state, action as T) } else ignoring()
+                        if (target(action)) consuming(immediateAction) { state -> flow(state, action as T) } else ignoring()
                     }
                 )
             }
 
             /**
-             * Creates a forwarding [LiveCommand] that only calls [block] for the targeted action.
+             * Creates a forwarding [LiveCommand] that only calls [flow] for the targeted action.
              *
-             * *Note: [block] is additionally called with targeted `action`.*
+             * *Note: [flow] is additionally called with targeted `action`.*
              *
              * @see[LiveReaction.Forwarding]
              */
-            fun forwardingLiveCommand(debugName: String = "", block: suspend CoroutineScope.(state: S, action: T) -> ReceiveChannel<A>) = apply {
+            fun forwardingLiveCommand(debugName: String = "", flow: (state: S, action: T) -> Flow<A>) = apply {
                 chain.add(
                     LiveCommand(debugName) { action ->
-                        if (target(action)) forwarding { state -> block(state, action as T) } else ignoring()
+                        if (target(action)) forwarding { state -> flow(state, action as T) } else ignoring()
                     }
                 )
             }
