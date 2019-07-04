@@ -36,6 +36,7 @@ import kotlinx.coroutines.channels.consumeEach
  * or available in [EiffelFactory.create].
  * @param[debugTag] Tag to use for debug logs concerning this view model, defaults to its simple name.
  */
+
 abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag: String? = null) : ViewModel() {
 
     /**
@@ -94,7 +95,7 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(Eiffel.interceptionDispatcher) {
         if (interceptions.isEmpty()) log { "├─ ↡ No interceptions to apply" }
-        next(0).invoke(scope, currentState, action, ::dispatch)
+        next(0).invoke(scope, currentState, action) { dispatch(action) }
     }
 
     private fun next(index: Int): Next<S, A> = if (index == interceptions.size) {
@@ -102,7 +103,9 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
     } else {
         { scope, state, action, dispatch ->
             interceptions[index].run {
-                if (index > 0) log { "├─   ← Forwarded:    $action" }
+                if (index > 0) {
+                    log { "├─   ← Forwarded:    $action" }
+                }
                 log { "├─ ↓ Interception:  $debugName" }
                 log { "├─   → Received:     $action" }
                 invoke(scope, state, action, dispatch, next(index + 1))
@@ -148,9 +151,19 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
     /**
      * Dispatches the given action by queuing it up for being processed by the state [update].
      */
-    fun dispatch(action: A) {
-        log { "↗ Dispatching: $action" }
-        dispatchActor.offer(action)
+    fun dispatch(action: A): Boolean {
+        return attemptDispatch(action)
+    }
+
+    @UseExperimental(ExperimentalCoroutinesApi::class)
+    private fun attemptDispatch(action: A): Boolean {
+        return if (dispatchActor.isClosedForSend) {
+            log { "! Unable to dispatch $action, channel is closed!" }
+            false
+        } else {
+            log { "↗ Dispatching: $action" }
+            dispatchActor.offer(action)
+        }
     }
 
     @UseExperimental(ExperimentalCoroutinesApi::class)
