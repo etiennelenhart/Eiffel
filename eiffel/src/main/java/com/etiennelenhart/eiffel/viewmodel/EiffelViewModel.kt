@@ -95,7 +95,7 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
 
     private suspend fun applyInterceptions(currentState: S, action: A) = withContext(Eiffel.interceptionDispatcher) {
         if (interceptions.isEmpty()) log { "├─ ↡ No interceptions to apply" }
-        next(0).invoke(scope, currentState, action) { dispatch(action) }
+        next(0).invoke(scope, currentState, action, dispatch)
     }
 
     private fun next(index: Int): Next<S, A> = if (index == interceptions.size) {
@@ -151,15 +151,10 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
     /**
      * Dispatches the given action by queuing it up for being processed by the state [update].
      */
-    fun dispatch(action: A): Boolean {
-        return attemptDispatch(action)
-    }
-
     @UseExperimental(ExperimentalCoroutinesApi::class)
-    private fun attemptDispatch(action: A): Boolean {
-        return if (dispatchActor.isClosedForSend) {
+    fun dispatch(action: A): Boolean {
+        if (dispatchActor.isClosedForSend) {
             log { "! Unable to dispatch $action, channel is closed!" }
-            false
         } else {
             log { "↗ Dispatching: $action" }
             dispatchActor.offer(action)
