@@ -15,7 +15,7 @@ import org.junit.runner.Description
  * JUnit Rule that sets the dispatchers used in [EiffelViewModel] to [Dispatchers.Unconfined] for synchronous execution and uses [InstantTaskExecutorRule]
  * for [LiveData] sources.
  */
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class EiffelViewModelTestRule : TestWatcher() {
 
     private val liveDataRule = object : InstantTaskExecutorRule() {

@@ -60,7 +60,7 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
 
     internal var saveState: (bundle: Bundle) -> Unit = {}
 
-    @UseExperimental(ObsoleteCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
     private val dispatchActor = scope.actor<A>(Eiffel.actionDispatcher, Channel.UNLIMITED) {
         channel.consumeEach { action ->
             val currentState = _state.value!!
@@ -153,7 +153,6 @@ abstract class EiffelViewModel<S : State, A : Action>(initialState: S, debugTag:
         dispatchActor.offer(action)
     }
 
-    @UseExperimental(ExperimentalCoroutinesApi::class)
     @CallSuper
     override fun onCleared() {
         super.onCleared()

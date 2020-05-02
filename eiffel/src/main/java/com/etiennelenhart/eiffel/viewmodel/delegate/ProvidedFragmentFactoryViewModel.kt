@@ -3,7 +3,6 @@ package com.etiennelenhart.eiffel.viewmodel.delegate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -29,7 +28,7 @@ class ProvidedFragmentFactoryViewModel<out T : ViewModel>(
     private var value: T? = null
 
     override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
-        if (value == null) value = ViewModelProviders.of(thisRef, factory()).get(viewModelClass)
+        if (value == null) value = ViewModelProvider(thisRef, factory()).get(viewModelClass)
         return value!!
     }
 }

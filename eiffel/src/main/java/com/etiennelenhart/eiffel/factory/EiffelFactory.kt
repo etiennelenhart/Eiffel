@@ -1,7 +1,7 @@
 package com.etiennelenhart.eiffel.factory
 
 import android.os.Bundle
-import androidx.lifecycle.AbstractSavedStateVMFactory
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
@@ -20,7 +20,7 @@ import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
  */
 abstract class EiffelFactory<V : EiffelViewModel<S, A>, S : State, A : Action>(
     owner: SavedStateRegistryOwner
-) : AbstractSavedStateVMFactory(owner, null) {
+) : AbstractSavedStateViewModelFactory(owner, null) {
 
     /**
      * Used internally to create an instance of [S].

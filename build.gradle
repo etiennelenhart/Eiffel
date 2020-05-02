@@ -1,23 +1,23 @@
 buildscript {
     ext {
-        compile_sdk_version = 28
+        compile_sdk_version = 29
         min_sdk_version = 14
-        target_sdk_version = 28
-        build_tools_version = '28.0.3'
+        target_sdk_version = 29
+        build_tools_version = '29.0.3'
         version_name = '5.0.0'
         version_code = 32
-        kotlin_version = '1.3.31'
-        junit_version = '4.12'
-        coroutines_version = '1.2.1'
-        coroutines_test_version = '1.1.0'
-        arch_core_testing_version = '2.0.1'
+        kotlin_version = '1.3.72'
+        junit_version = '4.13'
+        coroutines_version = '1.3.5'
+        coroutines_test_version = '1.3.5'
+        arch_core_testing_version = '2.1.0'
     }
     repositories {
         google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.1'
+        classpath 'com.android.tools.build:gradle:3.6.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
