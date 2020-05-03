@@ -1,5 +1,5 @@
 # Eiffel
-[![Build Status](https://app.bitrise.io/app/d982833489004cbc/status.svg?token=66rf2t84v8SFdippsAWM8g&branch=master)](https://www.bitrise.io/app/d982833489004cbc)
+[![Build Status](https://github.com/etiennelenhart/eiffel/workflows/Android%20CI/badge.svg?branch=master)](https://github.com/etiennelenhart/Eiffel/actions)
 [![JitPack](https://jitpack.io/v/etiennelenhart/eiffel.svg)](https://jitpack.io/#etiennelenhart/eiffel)
 
 ![Logo](./logo_full.svg)
