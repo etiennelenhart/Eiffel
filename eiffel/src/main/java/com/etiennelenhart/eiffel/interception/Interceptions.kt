@@ -4,7 +4,6 @@ import com.etiennelenhart.eiffel.interception.command.*
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import com.etiennelenhart.eiffel.viewmodel.EiffelViewModel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 
 @DslMarker
@@ -19,7 +18,6 @@ annotation class InterceptionsBuilderMarker
  * @param[A] Type of supported [Action].
  * @param[chain] List of [Interception] instances.
  */
-@UseExperimental(FlowPreview::class)
 class Interceptions<S : State, A : Action>(chain: List<Interception<S, A>>) : List<Interception<S, A>> by chain {
 
     constructor(vararg items: Interception<S, A>) : this(items.toList())
