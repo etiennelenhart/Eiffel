@@ -46,7 +46,7 @@ abstract class Update<S : State, A : Action> {
  * Example:
  *
  * ```
- * update<SampleState, SampleAction> {
+ * update<SampleState, SampleAction> { action ->
  *   when (action) {
  *      is SampleAction.Loading -> copy(isLoading = true)
  *      is SampleAction.Loaded -> copy(isLoading = false, data = action.data)
