@@ -93,3 +93,4 @@ Migration guides for breaking changes:
 
 - [2.0.0 → 3.x.x](./MIGRATION2-3.md)
 - [3.x.x → 4.x.x](./MIGRATION3-4.md)
+- [since 5.0 in the Wiki](https://github.com/etiennelenhart/Eiffel/wiki/Migration-4.x.x-%E2%86%92-5.x.x)
