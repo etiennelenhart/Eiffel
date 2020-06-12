@@ -20,16 +20,16 @@ sealed class HelloEiffelAction : Action {
     data class Greet(val name: String) : HelloEiffelAction()
 }
 
-fun helloEiffelUpdate() = update<HelloEiffelState, HelloEiffelAction> { action ->
+val helloEiffelUpdate = update<HelloEiffelState, HelloEiffelAction> { action ->
     when (action) {
         is HelloEiffelAction.NowInFrench -> copy(greeting = greeting.replace("Hello", "Salut"))
         is HelloEiffelAction.Greet -> copy(greeting = "Salut ${action.name}")
     }
 }
 
-class HelloEiffelViewModel(initialState: HelloEiffelState)
-    : EiffelViewModel<HelloEiffelState, HelloEiffelAction>(initialState) {
-    override val update = helloEiffelUpdate()
+class HelloEiffelViewModel(initialState: HelloEiffelState) :
+    EiffelViewModel<HelloEiffelState, HelloEiffelAction>(initialState) {
+    override val update = helloEiffelUpdate
 }
 
 class HelloEiffelFragment : Fragment() {
@@ -86,6 +86,31 @@ Apart from providing Redux-like reactive ViewModels, Eiffel includes the followi
 - Separate testing module with JUnit rules to test async behavior and helpers to test a chain of `Interceptions` in isolation
 
 Info on all of these and more can be found in the [Wiki](https://github.com/etiennelenhart/Eiffel/wiki).
+
+## Interceptions DSL
+
+Eiffel includes an easy-to-use Domain-specific language for creating a chain of `Interceptions`. This allows you to define the logic of your ViewModel domain in a simple and declarative way. Iterating on the quick example above, this is how you can define a set of interceptions in a few lines of code:
+
+```kotlin
+val helloEiffelInterceptions = interceptions<HelloEiffelState, HelloEiffelAction> {
+    add(CustomInterception()) // your custom interception
+    pipe { _, action -> Analytics.log("HelloEiffel", action) } // log something to analytics
+    on<HelloEiffelAction.Greet> { // following will only react to 'Greet' action
+        adapter("Upper case name") { _, action ->
+            HelloEiffelAction.Greet(action.name.toUpperCase())
+        }
+        filter { state, action -> // ignore duplicate button presses and empty names
+            !state.greeting.contains(action.name) || action.name.isNotBlank()
+        }
+    }
+}
+
+class HelloEiffelViewModel(initialState: HelloEiffelState) :
+    EiffelViewModel<HelloEiffelState, HelloEiffelAction>(initialState) {
+    override val update = helloEiffelUpdate
+    override val interceptions = helloEiffelInterceptions
+}
+```
 
 ## Migration
 
