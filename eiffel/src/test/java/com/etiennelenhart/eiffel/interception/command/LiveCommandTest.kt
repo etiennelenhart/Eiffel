@@ -3,14 +3,12 @@ package com.etiennelenhart.eiffel.interception.command
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import kotlin.test.assertEquals
 
-@UseExperimental(FlowPreview::class)
 class LiveCommandTest {
 
     object TestState : State

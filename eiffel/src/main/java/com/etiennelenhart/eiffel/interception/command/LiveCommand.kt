@@ -31,12 +31,10 @@ import kotlinx.coroutines.flow.flow
  * @param[react] Lambda expression called with the received [Action]. Use one of [LiveReactionScope.consuming], [LiveReactionScope.forwarding]
  * or [LiveReactionScope.ignoring].
  */
-@UseExperimental(FlowPreview::class)
 class LiveCommand<S : State, A : Action>(debugName: String = "", private val react: LiveReactionScope.(action: A) -> LiveReaction<S, A>) : Interception<S, A> {
 
     override val debugName: String = debugName.ifEmpty { toString() }
 
-    @UseExperimental(ObsoleteCoroutinesApi::class)
     override suspend fun invoke(scope: CoroutineScope, state: S, action: A, dispatch: (action: A) -> Unit, next: Next<S, A>): A? {
         return when (val reaction = LiveReactionScope.react(action)) {
             is LiveReaction.Consuming -> {

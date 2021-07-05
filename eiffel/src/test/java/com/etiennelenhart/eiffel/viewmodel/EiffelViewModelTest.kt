@@ -19,7 +19,7 @@ import org.junit.rules.TestRule
 import kotlin.test.*
 
 @ObsoleteCoroutinesApi
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class EiffelViewModelTest {
 
     @get:Rule
@@ -57,7 +57,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called THEN 'action' is processed`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
             object : EiffelViewModel<TestState, TestAction>(TestState()) {
                 override val update = testStateUpdate
@@ -72,7 +71,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called multiple times THEN all 'actions' are processed`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
             object : EiffelViewModel<TestState, TestAction>(TestState()) {
                 override val update = testStateUpdate
@@ -89,7 +87,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN 'dispatch' called with non-updating 'action' THEN state is not emitted`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
             object : EiffelViewModel<TestState, TestAction>(TestState()) {
                 override val update = testStateUpdate
@@ -111,7 +108,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass with a source 'LiveData' WHEN 'observeStateForever' called THEN updated state is emitted`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
             object : EiffelViewModel<TestState, TestAction>(TestState()) {
                 override val update = testStateUpdate
@@ -129,7 +125,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass with a removed source 'LiveData' WHEN 'observeStateForever' called THEN initial state is emitted`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
             object : EiffelViewModel<TestState, TestAction>(TestState()) {
                 override val update = testStateUpdate
@@ -196,7 +191,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass with interceptions WHEN 'dispatch' called THEN all interceptions are applied`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState()) {
             override val update = interceptionStateUpdate
             override val interceptions = Interceptions(firstInterception, secondInterception)
@@ -223,7 +217,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass with blocking interception WHEN 'dispatch' called THEN state is not updated`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel = object : EiffelViewModel<InterceptionState, InterceptionAction>(InterceptionState()) {
             override val update = interceptionStateUpdate
             override val interceptions = Interceptions(blockingInterception, firstInterception, secondInterception)
@@ -246,7 +239,6 @@ class EiffelViewModelTest {
 
     @Test
     fun `GIVEN EiffelViewModel subclass WHEN handled 'ViewEvent' dispatched multiple times THEN state is updated`() {
-        @UseExperimental(ExperimentalCoroutinesApi::class)
         val viewModel =
             object : EiffelViewModel<ViewEventState, DoTestEvent>(ViewEventState()) {
                 override val update = viewEventUpdate

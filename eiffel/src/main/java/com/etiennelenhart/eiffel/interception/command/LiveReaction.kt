@@ -3,7 +3,6 @@ package com.etiennelenhart.eiffel.interception.command
 import com.etiennelenhart.eiffel.interception.command.LiveReaction.*
 import com.etiennelenhart.eiffel.state.Action
 import com.etiennelenhart.eiffel.state.State
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
@@ -13,7 +12,6 @@ import kotlinx.coroutines.flow.FlowCollector
  * @param[S] Type of [State] to receive if consuming.
  * @param[A] Type of [Action] to react to.
  */
-@UseExperimental(FlowPreview::class)
 sealed class LiveReaction<S : State, A : Action> {
 
     /**
@@ -49,7 +47,6 @@ sealed class LiveReaction<S : State, A : Action> {
 /**
  * Scope for [LiveReaction] builder functions.
  */
-@UseExperimental(FlowPreview::class)
 object LiveReactionScope {
 
     /**
