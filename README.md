@@ -8,8 +8,6 @@
 
 A Redux-inspired Android architecture library leveraging [Architecture Components](https://developer.android.com/topic/libraries/architecture) and Kotlin Coroutines.
 
-Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](https://twitter.com/etiennelenhart).
-
 ## Quick example
 
 ```kotlin
