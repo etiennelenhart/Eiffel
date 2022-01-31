@@ -2,13 +2,10 @@
 
 [![Build Status](https://github.com/etiennelenhart/eiffel/workflows/Android%20CI/badge.svg?branch=master)](https://github.com/etiennelenhart/Eiffel/actions)
 [![JitPack](https://jitpack.io/v/etiennelenhart/eiffel.svg)](https://jitpack.io/#etiennelenhart/eiffel)
-[![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Check%20out%20Eiffel%20on%20GitHub!%20A%20Redux-like%20architecture%20library%20for%20Android%20with%20first-class%20support%20for%20Kotlin%20Coroutines%20and%20Flow.&url=https://github.com/etiennelenhart/Eiffel&via=etiennelenhart&hashtags=AndroidDev,Kotlin,GitHub,EiffelArch)
 
 ![Logo](./logo_full.svg)
 
 A Redux-inspired Android architecture library leveraging [Architecture Components](https://developer.android.com/topic/libraries/architecture) and Kotlin Coroutines.
-
-Any questions or feedback? Feel free to contact me on Twitter [@etiennelenhart](https://twitter.com/etiennelenhart).
 
 ## Quick example
 
